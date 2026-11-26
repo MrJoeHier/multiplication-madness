@@ -22,13 +22,13 @@ There are no step or operator buttons. The only controls in the math phase are t
 
 1. **Click the rightmost empty blank of a row once** (ones place), then tap number tiles: the cursor moves left by itself.
    Placeholder zeros are ordinary blanks (click, tap **0**). Factor digits are not clickable.
-2. **Carries are filled in by the player.** When a carry is due the cursor stops. Click the empty spot just under the line
-   (below the next top digit; nothing is drawn until you click), a small carry box appears, tap the carry, and the cursor goes back
-   to the next digit by itself. A row's last carry is written the same way at the front of the row.
+2. **Carries are written by the player, in small boxes on top.** When a carry is due, an empty carry box appears by itself above
+   the next top digit and the cursor jumps into it (no click). Tap the carry; the cursor goes back to the next digit by itself. A
+   row's last (leading) digit works the same way. The previous row's carries are wiped when the next row is started.
 3. When the last partial-product row is full, the answer row is next: click its rightmost blank once, then keep tapping. Column
-   carries use the same click-under-the-line spots (just under the answer line).
+   carries appear the same way, in a small box above the next column (above the first partial product).
 
-Wrong number tile, a blank or carry spot clicked out of order = -10% strength and a shake. Tapping a tile before placing the cursor is only a
+Wrong number tile, a blank clicked out of order = -10% strength and a shake. Tapping a tile before placing the cursor is only a
 friendly reminder (no penalty). Stars: no mistakes = 3, up to 2 = 2, more = 1.
 
 ## Adventures
