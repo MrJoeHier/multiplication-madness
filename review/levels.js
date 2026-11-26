@@ -17,7 +17,7 @@ window.LEVELS = [
     code: "03", ep: 1, lv: 3, name: "Log Slide", brief: "Solve 4 problems to dodge the tumbling logs!", cap: "Dodged them all!", desc: "2-digit × 4-digit",
     intro: [ { v: "../assets/setup-e1l3.mp4", p: "../assets/setup-e1l3-poster.jpg", a: "../assets/music/level-intro.mp3", sfx: "../assets/sfx/setup-e1l3.m4a", d: 14.833333 } ],
     lose: [ { img: "../assets/lose-e1l3.jpg", sting: "lose-sting.m4a" } ],
-    win: [ { v: "../assets/win-e1l3.mp4", p: "../assets/win-e1l3-poster.jpg", a: "../assets/music/main-theme.mp3", sfx: "../assets/sfx/win-e1l3.m4a", d: 12.916667 } ]
+    win: [ { v: "../assets/win-e1l3.mp4", p: "../assets/win-e1l3-poster.jpg", a: "../assets/music/main-theme.mp3", sfx: "../assets/sfx/win-e1l3.m4a", d: 15.0 } ]
   },
   {
     code: "04", ep: 1, lv: 4, name: "Volcano Rendezvous", brief: "Solve 2 problems to escape before the volcano erupts!", cap: "Raft away!", desc: "2-digit × 5-digit",
