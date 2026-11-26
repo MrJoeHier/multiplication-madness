@@ -1079,6 +1079,17 @@ body.ep-snow #board .cell.sidefac { color:#071c2e; font-weight:900; }
 }
 [data-theme="journal"] body.ep-savanna .key { position:relative; }
 
+
+/* ===== Multiplication Madness: click a blank, then a number tile. No step/operator buttons, only the number pad. ===== */
+.steps, .ctx { display:none !important; }
+#inner { grid-template-columns:1fr !important; grid-template-areas:"pad" !important; max-width:520px !important; }
+@media (orientation: landscape) and (max-height: 520px) { #inner { max-width:none !important; } }
+.cell.blank { cursor:pointer; z-index:2; background:none; border:0; padding:0; margin:0; font:inherit; color:inherit; appearance:none; -webkit-appearance:none; -webkit-tap-highlight-color:transparent; }
+.cell.blank.slot::after { border-color:var(--slot); background:rgba(255,255,255,.35); }
+.cell.blank.sel::after { border-style:solid; border-color:var(--accent); background:var(--accent-soft); animation:none; opacity:1; box-shadow:0 0 0 3px rgba(47,107,58,.25); }
+.cell.blank.blkhint::after { animation:blankNudge .6s ease 2; }
+@keyframes blankNudge { 0%,100% { transform:none; } 25% { transform:scale(1.12); } 60% { transform:scale(.96); } }
+.key.idle:not(:disabled) { opacity:.62; }
 </style>
 <style id="accounts-css">
 /* ================= accounts: sign in, create account, guest, public scoreboard ================= */
@@ -1203,11 +1214,6 @@ body.sdsw-on.sdnote-on #work #prompt { padding-right:14px; padding-top:calc(var(
   </main>
   <section id="input">
     <div id="inner">
-      <div class="steps">
-        <button class="step" data-step="multiply" aria-label="Multiply">×<span class="sl">Multiply</span></button>
-        <button class="step" data-step="zero" aria-label="Placeholder zero">0<span class="sl">Place holder</span></button>
-        <button class="step" data-step="add" aria-label="Add">+<span class="sl">Add</span></button>
-      </div>
       <div class="padwrap">
       <div class="pad">
         <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
@@ -1298,6 +1304,28 @@ function analyze(A, B) {
   const L = String(A * B).length;
   const sum = sumSteps(rows.map(r => r.dg), L);
   return { Ad, Bd, n: Ad.length, m: Bd.length, rows, sum, L, product: String(A * B) };
+}
+/* The ordered list of blanks the player fills, rightmost first: for each row its placeholder zeros and product digits, then the
+   answer row. Carries are NOT entries: they are shown automatically (carryOut) when the digit that produces them is entered. */
+function buildSeq(an) {
+  const seq = [];
+  an.rows.forEach(row => {
+    for (let j = 0; j < row.k; j++) seq.push({ t: "prod", k: row.k, col: j, val: 0, zero: true });
+    row.steps.forEach((st, si) => {
+      if (st.kind !== "write") return;
+      const nx = row.steps[si + 1], e = { t: "prod", k: row.k, col: st.col, val: st.val, i: st.i, cin: st.cin };
+      if (nx && nx.kind === "carry") e.carryOut = { kind: "carry", i: nx.i, val: nx.val };
+      else if (nx && nx.kind === "lead") e.carryOut = { kind: "lead", col: nx.col, val: nx.val };
+      seq.push(e);
+    });
+  });
+  an.sum.forEach((st, si) => {
+    if (st.kind !== "sum") return;
+    const nx = an.sum[si + 1], e = { t: "sum", k: an.m, col: st.col, val: st.val, cin: st.cin };
+    if (nx && nx.kind === "scarry") e.carryOut = { kind: "scarry", col: nx.col, val: nx.val };
+    seq.push(e);
+  });
+  return seq;
 }
 function genLevel(ep, l) {
   const cfg = lvCfg(ep, l), out = [], seen = new Set();
@@ -1518,8 +1546,8 @@ function newLevel(l, keepStrength) {
 function startProblem() {
   G.timeLeft = EPISODES[G.episode].secs; G.lastTickSec = null;
   const pr = G.problems[G.probIdx], A = analyze(pr.A, pr.B);
-  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "pick", expect: null, k: 0, idx: 0, sidx: 0,
-    prod: [], zeros: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "" };
+  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "enter", seq: buildSeq(A), sel: false, k: 0, idx: 0,
+    prod: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "" };
   for (let k = 0; k < A.m; k++) { G.P.prod.push({}); G.P.carries.push({}); }
   streak = 0; G.overlay = null; render();
 }
@@ -1575,68 +1603,50 @@ function act(type, arg) {
   if (G.overlay) { if (type === "next") overlayNext(); return; }
   if (!P || locked() || P.phase === "complete" || P.phase === "over") return;
   switch (type) {
-    case "pick": return onPick(arg);
-    case "step": return onStep(arg);
+    case "blank": return onBlank(arg);
     case "digit": return onDigit(arg);
-    case "multap": if (P.phase === "pick") { say("Tap the digit of the bottom number you multiply by next: " + (P.k === 0 ? "start with the ones digit." : "now the " + ordinalPlace(P.k) + " digit."), "warnmsg"); SFX.nudge(); render(); } return;
   }
 }
-const STEP_SEL = s => '.step[data-step="' + s + '"]';
-function onPick(j) {
-  const P = G.P; if (P.phase !== "pick") return;
-  if (j !== P.k) {
-    say(P.k === 0 ? "Not that one. Multiplying starts with the ones digit of the bottom number." : "Not that one. Next is the " + ordinalPlace(P.k) + " digit of the bottom number.", "badmsg");
-    return penalty('[data-pick="' + j + '"]');
+/* The only way to work: click an empty answer blank (rightmost first), THEN tap the number tile that belongs in it.
+   Factor digits and carries are not clickable. Wrong blank (out of order) = -10% like any wrong answer; a tile with no blank
+   chosen is just a friendly nudge, no penalty. */
+const BLANK_SEL = i => '.cell.blank[data-blank="' + i + '"]';
+function onBlank(i) {
+  const P = G.P; if (P.phase !== "enter") return;
+  const e = P.seq[P.idx];
+  if (i !== P.idx) {
+    if (i < P.idx) return; // already filled
+    say(e.t === "sum" ? "Not that blank. Add from the right: start with the rightmost empty blank." : "Not that blank. Work from the right: click the rightmost empty blank first.", "badmsg");
+    return penalty(BLANK_SEL(i));
   }
-  P.phase = "needStep"; P.expect = P.k === 0 ? "multiply" : "zero"; say(null);
-  fresh.add("glow:b" + j); good("place"); render();
+  if (P.sel) return;
+  P.sel = true; say(null); good("place"); render();
 }
-function onStep(s) {
-  const P = G.P;
-  if (P.phase === "mult" || P.phase === "sum") return; // buttons are disabled mid-typing
-  if (P.phase === "pick") { say("First tap the digit of the bottom number you are multiplying by.", "badmsg"); return penalty(STEP_SEL(s)); }
-  if (P.phase !== "needStep" || P.expect !== s) {
-    say(P.phase === "needStep" && P.expect ? "Not that step yet. Think about what comes next." : null, "badmsg");
-    return penalty(STEP_SEL(s));
-  }
-  say(null); flashOk(STEP_SEL(s));
-  if (s === "zero") {
-    for (let j = 0; j < P.k; j++) { P.prod[P.k][j] = 0; fresh.add("glow:p" + P.k + "," + j); }
-    P.zeros[P.k] = true; P.expect = "multiply"; good("step"); render(); return;
-  }
-  if (s === "multiply") { P.phase = "mult"; P.idx = 0; good("step"); render(); return; }
-  if (s === "add") { P.phase = "sum"; P.sidx = 0; good("step"); render(); return; }
-}
-function flashOk(sel) { const el = document.querySelector(sel); if (el) { el.classList.remove("okflash"); void el.offsetWidth; el.classList.add("okflash"); setTimeout(() => el.classList.remove("okflash"), 480); } }
 function onDigit(v) {
-  const P = G.P;
-  if (P.phase === "mult") {
-    const row = P.an.rows[P.k], st = row.steps[P.idx];
-    if (v !== st.val) {
-      say(st.kind === "write" ? "Not quite. " + (st.cin ? "Multiply, then add the carry." : "Check your times table.") : "Not quite. That's the carry.", "badmsg");
-      return penalty(".cell.slot");
-    }
-    say(null);
-    if (st.kind === "carry") { P.carries[P.k][st.i] = v; fresh.add("glow:c" + st.i); }
-    else { P.prod[P.k][st.col] = v; fresh.add("glow:p" + P.k + "," + st.col); }
-    P.idx++; good("tick");
-    if (P.idx >= row.steps.length) {
-      // this row is done: clear the carries, then the next bottom digit (or the addition)
-      P.carries[P.k] = {};
-      if (P.k + 1 < P.m) { P.k++; P.phase = "pick"; P.expect = null; }
-      else { P.phase = "needStep"; P.expect = "add"; }
-    }
-    render(); return;
+  const P = G.P; if (P.phase !== "enter") return;
+  const e = P.seq[P.idx];
+  if (!P.sel) { say("First click the blank where the digit goes, then tap a number.", "warnmsg"); SFX.nudge(); render(); const b = document.querySelectorAll(".cell.blank"); b.forEach(x => { x.classList.remove("blkhint"); void x.offsetWidth; x.classList.add("blkhint"); }); return; }
+  if (v !== e.val) {
+    say(e.zero ? "Not quite. A placeholder spot holds a zero." : e.t === "sum" ? "Not quite. " + (e.cin ? "Add the column, then the carry." : "Add up the column.") : "Not quite. " + (e.cin ? "Multiply, then add the carry." : "Check your times table."), "badmsg");
+    return penalty(".cell.blank.sel");
   }
-  if (P.phase === "sum") {
-    const st = P.an.sum[P.sidx];
-    if (v !== st.val) { say(st.kind === "sum" ? "Not quite. " + (st.cin ? "Add the column, then the carry." : "Add up the column.") : "Not quite. That's the carry.", "badmsg"); return penalty(".cell.slot"); }
-    say(null);
-    if (st.kind === "scarry") { P.scar[st.col] = v; fresh.add("glow:s" + st.col); } else { P.final[st.col] = v; fresh.add("glow:f" + st.col); }
-    P.sidx++; good("tick");
-    if (P.sidx >= P.an.sum.length) return complete();
-    render(); return;
+  say(null);
+  if (e.t === "prod") {
+    P.prod[e.k][e.col] = v; fresh.add("glow:p" + e.k + "," + e.col);
+    if (e.carryOut) {
+      if (e.carryOut.kind === "carry") { P.carries[e.k][e.carryOut.i] = e.carryOut.val; fresh.add("glow:c" + e.carryOut.i); }
+      else { P.prod[e.k][e.carryOut.col] = e.carryOut.val; fresh.add("glow:p" + e.k + "," + e.carryOut.col); } // last carry goes in front automatically
+    }
+  } else {
+    P.final[e.col] = v; fresh.add("glow:f" + e.col);
+    if (e.carryOut) { P.scar[e.carryOut.col] = e.carryOut.val; fresh.add("glow:s" + e.carryOut.col); }
   }
+  P.idx++; P.sel = false; good("tick");
+  const nx = P.seq[P.idx];
+  if (e.t === "prod" && (!nx || nx.t !== "prod" || nx.k !== e.k)) P.carries[e.k] = {}; // row finished: its carries go away
+  if (!nx) return complete();
+  P.k = nx.k;
+  render();
 }
 function complete() {
   const P = G.P; P.phase = "complete";
@@ -1776,43 +1786,40 @@ function render() {
   const glow = id => fresh.has("glow:" + id) ? " glow" : "";
   let html = "";
   const cell = (x, y, txt, cls, attrs) => '<div class="cell ' + cls + '" style="left:' + x + "px;top:" + y + 'px"' + (attrs || "") + ">" + txt + "</div>";
-  const stepNow = P.phase === "mult" ? an.rows[P.k].steps[P.idx] : null;
-  const sumNow = P.phase === "sum" ? an.sum[P.sidx] : null;
-  // top number
-  an.Ad.forEach((d, i) => { const foc = stepNow && stepNow.kind === "write" && stepNow.i === i; html += cell(X(i), yA, '<span class="dg">' + d + "</span>", "hand stone" + (foc ? " focus" : ""), ""); });
-  // bottom number (tap targets while picking)
+  const E0 = P.phase === "enter" ? P.seq[P.idx] : null;
+  const blankHtml = (x, y, i) => '<button type="button" class="cell blank slot tap' + (P.sel && i === P.idx ? " sel" : "") + '" style="left:' + x + "px;top:" + y + 'px" data-blank="' + i + '" aria-label="Empty answer blank"></button>';
+  // top number and bottom number: just numbers, not clickable (the one being multiplied is highlighted)
+  an.Ad.forEach((d, i) => { const foc = E0 && E0.t === "prod" && !E0.zero && E0.i === i; html += cell(X(i), yA, '<span class="dg">' + d + "</span>", "hand stone" + (foc ? " focus" : ""), ""); });
   an.Bd.forEach((d, j) => {
-    const picking = P.phase === "pick", cur = (P.phase === "mult" || (P.phase === "needStep" && P.expect !== "add")) && j === P.k;
-    html += cell(X(j), yB, '<span class="dg">' + d + "</span>", "hand stone" + (picking ? " tap" : "") + (cur ? " cur" : "") + glow("b" + j), picking ? ' data-pick="' + j + '"' : "");
+    const cur = E0 && E0.t === "prod" && j === E0.k;
+    html += cell(X(j), yB, '<span class="dg">' + d + "</span>", "hand stone" + (cur ? " cur" : ""), "");
   });
   html += '<div class="sign hand" style="left:' + (X(Math.max(n, m)) + 0.05 * cw) + "px;top:" + yB + 'px">×</div>';
   html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL1 - 1) + 'px"></div>';
-  // multiplication carries (current row only)
-  const cr = P.carries[Math.min(P.k, m - 1)] || {};
+  // carries (shown automatically; current row only)
+  const cr = P.carries[Math.min(E0 && E0.t === "prod" ? E0.k : P.k, m - 1)] || {};
   Object.keys(cr).forEach(i => { html += cell(X(+i), yCarry, cr[i], "hand carryc" + glow("c" + i), ""); });
-  if (stepNow && stepNow.kind === "carry") html += cell(X(stepNow.i), yCarry, "", "hand carryc slot", "");
-  // partial products
+  // partial products already written
   for (let k = 0; k < m; k++) {
     Object.keys(P.prod[k]).forEach(c => { c = +c; const z = c < k; html += cell(X(c), yP(k), '<span class="dg">' + P.prod[k][c] + "</span>", "hand prod" + (z ? " zero" : "") + glow("p" + k + "," + c), ""); });
   }
-  if (stepNow && stepNow.kind !== "carry") html += cell(X(stepNow.col), yP(P.k), "", "slot", "");
+  // empty blanks of the row being worked on (placeholder zeros included): click one, then a number tile
+  if (E0 && E0.t === "prod") P.seq.forEach((e, i) => { if (i >= P.idx && e.t === "prod" && e.k === E0.k) html += blankHtml(X(e.col), yP(e.k), i); });
   if (m > 0) html += '<div class="sign hand" style="left:' + (X(C - 0) + 0.05 * cw) + "px;top:" + yP(m - 1) + 'px">+</div>';
-  // sum carries and answer row
+  // sum carries (automatic) and the answer row
   Object.keys(P.scar).forEach(c => { html += cell(X(+c), ySC, P.scar[c], "hand carryc" + glow("s" + c), ""); });
-  if (sumNow && sumNow.kind === "scarry") html += cell(X(sumNow.col), ySC, "", "hand carryc slot", "");
   html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL2 - 1) + 'px"></div>';
   Object.keys(P.final).forEach(c => { html += cell(X(+c), yF, '<span class="dg">' + P.final[c] + "</span>", "hand quo" + glow("f" + c), ""); });
-  if (sumNow && sumNow.kind === "sum") {
-    html += cell(X(sumNow.col), yF, "", "slot", "");
-    // highlight the column being added
-    for (let k = 0; k < m; k++) if (P.prod[k][sumNow.col] !== undefined) html += cell(X(sumNow.col), yP(k), "", "colhi", "");
+  if (E0 && E0.t === "sum") {
+    P.seq.forEach((e, i) => { if (i >= P.idx && e.t === "sum") html += blankHtml(X(e.col), yF, i); });
+    for (let k = 0; k < m; k++) if (P.prod[k][E0.col] !== undefined) html += cell(X(E0.col), yP(k), "", "colhi", ""); // highlight the column being added
   }
   const bw = Math.max(L.W, L.contentW), bh = Math.max(L.H - L.prH, yF + rh * 1.4);
   board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
   board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + L.prH) + "px;top:-" + L.prH + 'px"></div>' + html;
   board.style.top = L.prH + "px"; board.style.position = "absolute";
   // keep the active spot visible
-  const workEl = $("#work"), act = board.querySelector(".slot, .tap");
+  const workEl = $("#work"), act = board.querySelector(".blank.sel, .blank");
   if (act && workEl && workEl.scrollHeight > workEl.clientHeight) {
     const wr = workEl.getBoundingClientRect(), ar = act.getBoundingClientRect(), topKeep = wr.top + L.prH + 4;
     if (ar.bottom > wr.bottom - 4 && ar.top - topKeep > 0) workEl.scrollTop = Math.min(workEl.scrollTop + (ar.bottom - wr.bottom + 4), workEl.scrollTop + (ar.top - topKeep));
@@ -1821,15 +1828,18 @@ function render() {
 }
 function defaultPrompt() {
   const P = G.P;
-  switch (P.phase) {
-    case "pick": return P.k === 0 ? "Tap the ones digit of the bottom number — the first digit you multiply by." : "Tap the " + placeName(P.k) + " digit of the bottom number.";
-    case "needStep": return P.expect === "add" ? "All the rows are done. What's the next step?" : "What's the next step?";
-    case "mult": { const st = P.an.rows[P.k].steps[P.idx]; if (!st) return "Multiply: done!"; return st.kind === "carry" ? "Write the carry above the next digit." : st.kind === "lead" ? "Write the last carry in front." : st.cin ? "Multiply, add the carry, and write the ones digit." : "Multiply and write the ones digit."; }
-    case "sum": { const st = P.an.sum[P.sidx]; if (!st) return "Add: done!"; return st.kind === "scarry" ? "Write the carry above the next column." : st.cin ? "Add this column and the carry. Write the ones digit." : "Add this column. Write the ones digit."; }
-    case "complete": return "Solved! " + P.A + " × " + P.B + " = " + P.an.product;
-    case "over": return "Out of strength.";
+  if (P.phase === "complete") return "Solved! " + P.A + " × " + P.B + " = " + P.an.product;
+  if (P.phase === "over") return "Out of strength.";
+  const e = P.seq[P.idx]; if (!e) return "";
+  if (!P.sel) {
+    if (e.t === "sum") return P.idx === P.seq.findIndex(x => x.t === "sum") ? "Now add the rows. Click the blank on the far right of the answer line to start." : "Click the next blank, working from the right.";
+    if (P.idx === 0) return "Click the blank on the far right under the line, then tap the number that goes in it.";
+    const first = P.seq.findIndex(x => x.t === "prod" && x.k === e.k);
+    return P.idx === first ? "Next row: you're multiplying by the " + placeName(e.k) + " digit. Click the blank on the far right." : "Click the next blank, working from the right.";
   }
-  return "";
+  if (e.t === "sum") return e.cin ? "Add this column and the carry, then tap the ones digit." : "Add this column, then tap the ones digit.";
+  if (e.zero) return "This blank is a placeholder spot. Tap the number that goes here.";
+  return e.cin ? "Multiply, add the carry, then tap the ones digit." : "Multiply, then tap the ones digit.";
 }
 
 function renderHeader() {
@@ -1851,11 +1861,8 @@ function renderHeader() {
 function renderInput() {
   const P = G.P, ph = P ? P.phase : "none";
   const playing = P && !G.overlay && ph !== "complete" && ph !== "over";
-  const mid = ph === "mult" || ph === "sum";
-  const activeStep = { mult: "multiply", sum: "add" }[ph];
-  $$(".step").forEach(b => { b.disabled = !playing || mid; b.classList.toggle("active", !!playing && b.dataset.step === activeStep); });
-  const keysOn = playing && mid;
-  $$(".key").forEach(b => { b.disabled = !keysOn; });
+  /* number tiles stay tappable (a tile before a blank gives a friendly nudge); they look dim until a blank is chosen */
+  $$(".key").forEach(b => { b.disabled = !playing; b.classList.toggle("idle", !!playing && !P.sel); });
 }
 
 function epSeg(sel, attr) {
@@ -1875,7 +1882,7 @@ function renderOverlay() {
   root.dataset.sig = JSON.stringify(o);
   let h = "";
   if (o.type === "start") {
-    h = '<h1>Multiplication Madness</h1><p>Multiply · Place holder · Add</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
+    h = '<h1>Multiplication Madness</h1><p>Click a blank · Tap a number</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
       LEVELS_EP[o.ep || 0].map((L, i) => '<button class="lv' + ((o.sel || 0) === i ? " sel" : "") + '" data-lv="' + i + '"><b>' + (i + 1) + ". " + L.name + "</b><span>" + L.desc + "</span></button>").join("") +
       '</div><button class="big" data-act="next">Start E' + ((o.ep || 0) + 1) + " · Level " + ((o.sel || 0) + 1) + "</button>";
   } else if (o.type === "solved") {
@@ -1910,12 +1917,11 @@ function renderOverlay() {
 /* ================= input wiring ================= */
 function press(el) { if (!el) return; el.classList.add("pressed"); setTimeout(() => el.classList.remove("pressed"), 90); }
 document.addEventListener("click", e => {
-  const t = e.target.closest("button, [data-pick], [data-act]");
+  const t = e.target.closest("button, [data-blank], [data-act]");
   if (!t) return;
   audio();
   if (t.closest("#cine, #devp")) return;
-  if (t.dataset.pick !== undefined) return act("pick", +t.dataset.pick);
-  if (t.dataset.step) return act("step", t.dataset.step);
+  if (t.dataset.blank !== undefined) return act("blank", +t.dataset.blank);
   if (t.dataset.key) return act("digit", +t.dataset.key);
   if (t.id === "btn-settings") { if (G.overlay && G.overlay.type === "settings") return; G.overlay = { type: "settings", prev: G.overlay }; render(); return; }
   if (t.dataset.ep !== undefined) { G.overlay.ep = +t.dataset.ep; SFX.step(); render(); return; }
@@ -1928,7 +1934,6 @@ document.addEventListener("click", e => {
   if (t.dataset.jump !== undefined) { const ep = G.overlay.jumpEp !== undefined ? G.overlay.jumpEp : G.episode; flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; Music.play("bed"); newLevel(+t.dataset.jump, false); preloadLevel(+t.dataset.jump); return; }
   if (t.dataset.act === "next") return act("next");
 });
-const KEYMAP = { "*": ["step", "multiply"], "x": ["step", "multiply"], "X": ["step", "multiply"], "×": ["step", "multiply"], "p": ["step", "zero"], "P": ["step", "zero"], "z": ["step", "zero"], "Z": ["step", "zero"], "+": ["step", "add"], "a": ["step", "add"], "A": ["step", "add"] };
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -1949,8 +1954,6 @@ document.addEventListener("keydown", e => {
     act("digit", +e.key); e.preventDefault(); return;
   }
   if (e.key === "Enter") { e.preventDefault(); if (G.overlay) return act("next"); return; }
-  const m = KEYMAP[e.key];
-  if (m && !G.overlay) { e.preventDefault(); if (m[0] === "step") press(document.querySelector(STEP_SEL(m[1]))); act(m[0], m[1]); }
 });
 // iOS: block pinch / double-tap zoom gestures
 document.addEventListener("gesturestart", e => e.preventDefault());
@@ -4000,13 +4003,8 @@ window.__MVM_AUTH = { checkUsername, checkNick, checkAccountName, prettyAccountN
 
 /* ================= dev tools (?dev=1) ================= */
 function nextMove(P) {
-  switch (P.phase) {
-    case "pick": return ["pick", P.k];
-    case "needStep": return ["step", P.expect];
-    case "mult": return ["digit", P.an.rows[P.k].steps[P.idx].val];
-    case "sum": return ["digit", P.an.sum[P.sidx].val];
-  }
-  return null;
+  if (P.phase !== "enter") return null;
+  return P.sel ? ["digit", P.seq[P.idx].val] : ["blank", P.idx];
 }
 async function devSolve() {
   if (!G.P || G.overlay) return "not playing";
@@ -4081,7 +4079,7 @@ try { const sp = parseFloat(new URLSearchParams(location.search).get("timerSpeed
 window.showStrengthBoost = showStrengthBoost;
 window.__MVM = { G, Cine, Music, RecAudio, get AC() { return AC; }, beginLevel, winLevel, loseFlow, timeUp, runTitle, devSolve, store, TUNE, LV_INFO, EP_INFO, LVS, Progress, normName, rosterCsv, openBoard, get DB() { return DB; }, timerRunning, unlocked, setAnim: v => { ANIM = v; }, cancelFlows: () => ++flowTok, teacherScreen, teacherCloudScreen, teacherJumpPanel };
 window.__DD = { Cine, go(ep, lv) { flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; newLevel(lv || 0, false); }, G, EPISODES, penalty: () => penalty(), render: () => render(), setTimeScale: v => { G.timeScale = v; }, act, analyze, genLevel, newLevel, LEVELS, LEVELS_EP, nextMove, setAnim: v => { ANIM = v; }, setLock: () => { lockUntil = 0; },
-  loadProblem(A, B) { G.overlay = null; G.problems[G.probIdx] = { A: String(A), B: String(B) }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, expect: P.expect, k: P.k, idx: P.idx, sidx: P.sidx, strength: G.strength, pens: P.pens, msg: P.msg, A: P.A, B: P.B, product: P.an.product, final: P.final, prod: P.prod }; } };
+  loadProblem(A, B) { G.overlay = null; G.problems[G.probIdx] = { A: String(A), B: String(B) }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, sel: P.sel, k: P.k, idx: P.idx, total: P.seq.length, next: P.seq[P.idx] || null, carries: P.carries, scar: P.scar, strength: G.strength, pens: P.pens, msg: P.msg, A: P.A, B: P.B, product: P.an.product, final: P.final, prod: P.prod }; } };
 })();
 </script>
 <script>

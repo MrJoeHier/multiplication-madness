@@ -16,16 +16,20 @@ Live: <https://mrjoehier.github.io/multiplication-madness/>
 Levels 1–3 have four problems, Level 4 has two. Strength starts at 100%, drops 10% per mistake, +30% after each
 level, back to 100% after an episode. Out of strength = restart the episode; out of time = retry the level.
 
-## The multiplication scaffold (mirrors the long-division step buttons)
+## The multiplication scaffold (click a blank, then tap a number)
 
-1. **Tap the bottom digit** you multiply by (ones digit first, then tens, hundreds, thousands).
-2. Press **Place holder 0** (only for the tens digit and beyond): drops the zeros for that row.
-3. Press **× Multiply**, then type the row's product digits right to left. Carries appear in small boxes above the next
-   top digit; a final carry is written as the row's leading digit.
-4. Repeat for each bottom digit. When every row is done, press **+ Add**.
-5. Add the columns right to left (carries go in the small boxes above the next column) to write the answer.
+There are no step or operator buttons. The only controls in the math phase are the number tiles 0-9 under the page.
 
-Wrong digit, wrong tap or wrong step button = −10% strength and a shake. Stars: no mistakes = 3, up to 2 = 2, more = 1.
+1. **Click an empty answer blank** under the line, starting with the rightmost one (ones place). The blank lights up.
+2. **Tap the number tile** (0-9) that belongs in it. Placeholder zeros are ordinary blanks: click the blank, tap **0**.
+3. The factor digits are not clickable; the digit being multiplied is highlighted for you.
+4. **Carries are automatic.** When a digit you enter produces a carry (4 x 9 = 36: you enter 6), the carry shows in the small
+   box above the next top digit by itself; a final carry is written as the row's leading digit by itself.
+5. When the last partial-product row is full, the game moves to the answer row on its own: blanks for the answer, right to
+   left, with the column carries shown automatically. Finish the answer to solve the problem.
+
+Wrong number tile or clicking a blank out of order = -10% strength and a shake. Tapping a tile before choosing a blank is only a
+friendly reminder (no penalty). Stars: no mistakes = 3, up to 2 = 2, more = 1.
 
 ## Adventures
 
