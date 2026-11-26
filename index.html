@@ -2818,6 +2818,7 @@ const Cine = (() => {
           (soon ? '<div class="msoon">' + soon + "</div>" : "") + '<button class="mlb" data-cine="lb" aria-label="Star Scoreboard">🏆</button>' +
           (choice ? '<div class="mchoice">' + (showSave ? '<button class="msave-tag" data-cine="msave">Save for Later</button>' : "") + '<button class="mrose cprimary" data-cine="mcont" aria-label="Continue">' + compassSvg + '<span class="mrose-lab">Continue<small>▶</small></span></button></div>' : "") + "</div>" +
           (unfurl ? '<div class="munroll" aria-hidden="true"><div class="mrw l"><div class="mrod"></div></div><div class="mrw r"><div class="mrod"></div></div></div>' : "") + "</div>");
+        bindHandlers();
         dots = Array.from(root.querySelectorAll(".dot.nd"));
         if (hadProgress) {
           if (prevArrived || prevI >= dots.length) { dots.forEach(d => d.classList.add("on")); i = dots.length; if (prevArrived) finish(); else arrive(); } // after a resize/rotate, put Continue straight back
@@ -2827,15 +2828,19 @@ const Cine = (() => {
           timers.push(setTimeout(step, ANIM < 0.3 ? 900 * ANIM : ufDur + 220)); // dots start once the map has unrolled
         }
       }
-      const onResize = () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (!fin) render(true); }, 140); };
+      const onResize = () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (fin) return; const c = root.querySelector(".mchoice.show"); if (c && choice) return; /* Continue is up: CSS handles the new size */ render(true); }, 140); };
       window.addEventListener("resize", onResize);
       window.addEventListener("orientationchange", onResize);
       try { Music.stop(0.85); } catch (e) {}
       Ambience.ensureAC(); Ambience.start(ep);
+      /* show() clears the tap/button handlers every time it redraws the screen, so they are (re)bound after EVERY render of the map.
+         (iPhone bug: a resize/rotate/toolbar change redrew the map, the handlers were left empty and Continue did nothing.) */
+      function bindHandlers() {
+        onTap = () => { Ambience.ensureAC(); if (fin) return; if (i < dots.length) { timers.forEach(clearTimeout); timers = []; dots.forEach(d => d.classList.add("on")); i = dots.length; arrive(); } else finish(); };
+        onSkip = () => done("continue");
+        onBtn = (k, b) => { if (k === "lb") { openBoard(); return; } if (k === "mcont") { try { SFX.step(); } catch (e) {} done("continue"); } if (k === "msave") { try { SFX.step(); } catch (e) {} done("save"); } };
+      }
       render(false);
-      onTap = () => { Ambience.ensureAC(); if (fin) return; if (i < dots.length) { timers.forEach(clearTimeout); timers = []; dots.forEach(d => d.classList.add("on")); i = dots.length; arrive(); } else finish(); };
-      onSkip = () => done("continue");
-      onBtn = (k, b) => { if (k === "lb") { openBoard(); return; } if (k === "mcont") { SFX.step(); done("continue"); } if (k === "msave") { SFX.step(); done("save"); } };
     });
   }
   function clip(name, opts) {
