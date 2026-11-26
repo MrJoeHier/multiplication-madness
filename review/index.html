@@ -18,6 +18,11 @@ button { font:inherit; cursor:pointer; }
 #stage img.still { display:none; }
 #tag { position:absolute; left:calc(12px + env(safe-area-inset-left)); top:calc(10px + env(safe-area-inset-top)); padding:6px 12px; border-radius:10px; background:rgba(0,0,0,.55); font-weight:800; font-size:clamp(.8rem,1.8vw,1rem); transition:opacity .6s; pointer-events:none; text-shadow:0 1px 2px #000; }
 #tag.dim { opacity:0; }
+#pos { position:absolute; left:calc(12px + env(safe-area-inset-left)); bottom:calc(14px + env(safe-area-inset-bottom)); padding:5px 10px; border-radius:10px; background:rgba(0,0,0,.55); font-weight:700; font-size:.8rem; line-height:1.3; pointer-events:none; text-shadow:0 1px 2px #000; max-width:34vw; }
+#pos small { display:block; color:#cdb88f; font-weight:600; }
+.card.last { outline:3px solid #ffd878; outline-offset:-1px; border-color:#ffd878; }
+.keyhint { text-align:center; color:#e3cfa3; font-size:.85rem; margin:-2px auto 12px; }
+.keyhint kbd { display:inline-block; min-width:1.4em; padding:1px 7px; border:1px solid rgba(243,198,90,.7); border-radius:6px; background:#3a2615; color:#fff3d0; font-family:inherit; font-weight:700; }
 #tools { position:absolute; right:calc(10px + env(safe-area-inset-right)); top:calc(10px + env(safe-area-inset-top)); display:flex; gap:8px; }
 #tools button { padding:7px 12px; border-radius:10px; border:1px solid rgba(243,198,90,.7); background:rgba(31,18,8,.72); color:#fff3d0; font-weight:700; font-size:.85rem; }
 #cont { position:absolute; left:0; right:0; margin:0 auto; bottom:calc(22px + env(safe-area-inset-bottom)); width:min(210px, 56vw); min-height:48px; font-size:1.05rem; opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .35s, transform .35s; }
@@ -75,7 +80,8 @@ button { font:inherit; cursor:pointer; }
   <img class="still" id="still" alt="">
   <div id="lbox"><div id="lose">YOU LOSE</div></div>
   <div id="tag"></div>
-  <div id="tools"><button id="bskip" type="button">⏭ Skip to freeze</button><button id="bmenu" type="button">☰ Menu</button></div>
+  <div id="pos"></div>
+  <div id="tools"><button id="bprev" type="button" title="Previous clip (Left Arrow)">◀ Prev</button><button id="bnext" type="button" title="Next clip (Right Arrow)">Next ▶</button><button id="bskip" type="button">⏭ Skip to freeze</button><button id="bmenu" type="button">☰ Menu</button></div>
   <div id="hint">Music keeps playing · press any key or Continue</div>
   <button id="cont" class="gold" type="button">Continue ▶</button>
 </div>
@@ -83,6 +89,7 @@ button { font:inherit; cursor:pointer; }
   <h1>Man vs. Math: Multiplication Madness · Video Review</h1>
   <p class="sub">Every intro clip, lose screen, and win clip in the live game: 12 of each, grouped by category and then by episode and level. Tap any card to play it. <b>Continue</b> moves on to the next one in that category. Intros and wins freeze at the end with the music still going; lose screens show the still with the lose sting.</p>
   <button id="playall" class="gold" type="button">▶ Play all from the start</button>
+  <p class="keyhint">Keyboard: <kbd>→</kbd> next clip · <kbd>←</kbd> previous clip, in order: intro, lose, win for each level, E1L1 through E3L4 (36 clips). Works here and in the player.</p>
   <p class="arch"><a href="../">Back to the game</a></p>
   <div id="eps"></div>
 </div>
@@ -240,11 +247,12 @@ button { font:inherit; cursor:pointer; }
     var L = it.L,
         label = (it.kind === "intro" ? "intro " : it.kind === "lose" ? "lose " : "win ") + L.code + " · " + L.name;
     setTag(label);
+    updatePos(it);
     if (it.kind === "lose") {
       S.state = "frozen"; vid.style.display = "none"; vid.removeAttribute("src"); vid.load();
       still.src = it.s.img; still.style.display = "block"; lbox.classList.add("show");
       stopSfx(); aud.src = it.s.sting; aud.load();
-      var sp = aud.play(); if (sp && sp.catch) sp.catch(function () { askStart(function () { play(i, toFreeze); }); });
+      var sp = aud.play(); if (sp && sp.catch) sp.catch(function (er) { if (tok === S.token && er && er.name === "NotAllowedError") askStart(function () { play(i, toFreeze); }); });
       layoutLoseTitle(it);
       setTimeout(function () { if (tok === S.token) showCont(false); }, toFreeze ? 0 : 900);
       document.getElementById("bskip").style.visibility = "hidden";
@@ -263,10 +271,17 @@ button { font:inherit; cursor:pointer; }
       vid.currentTime = 0; aud.currentTime = 0;
       if (hasSfx) { try { sfx.currentTime = 0; } catch (e) {} }
       var p1 = vid.play(), p2 = aud.play();
-      if (p2 && p2.catch) p2.catch(function () { askStart(function () { play(i, toFreeze); }); });
+      if (p2 && p2.catch) p2.catch(function (er) { if (tok === S.token && er && er.name === "NotAllowedError") askStart(function () { play(i, toFreeze); }); });
       if (p1 && p1.catch) p1.catch(function () {});
       if (hasSfx) { var p3 = sfx.play(); if (p3 && p3.catch) p3.catch(function () {}); }
     };
+    /* If the picture has not loaded after a few seconds (e.g. after quick arrow-key hops), ask for it again. */
+    (function (t0, tries) {
+      var iv = setInterval(function () {
+        if (tok !== S.token || S.state !== "loading" || tries > 3) { clearInterval(iv); return; }
+        if (performance.now() - t0 > 2500 * (tries + 1) && vid.readyState < 2) { tries++; try { vid.load(); } catch (e) {} }
+      }, 300);
+    })(performance.now(), 0);
     vid.addEventListener("loadeddata", go, { once: true });
     aud.addEventListener("canplay", go, { once: true });
     if (hasSfx) {
@@ -286,7 +301,7 @@ button { font:inherit; cursor:pointer; }
     vid.addEventListener("seeked", function () { if (tok === S.token) freeze(); }, { once: true });
     vid.currentTime = target;
     if (it.kind === "win" || intro) {
-      aud.currentTime = intro ? INTRO_BEAT : d; var p = aud.play(); if (p && p.catch) p.catch(function () { askStart(function () { aud.play(); }); });
+      aud.currentTime = intro ? INTRO_BEAT : d; var p = aud.play(); if (p && p.catch) p.catch(function (er) { if (tok === S.token && er && er.name === "NotAllowedError") askStart(function () { aud.play(); }); });
       if (it.c.sfx) {
         try { sfx.currentTime = intro ? INTRO_BEAT : Math.max(0, (sfx.duration || d) - 0.05); } catch (e) {}
         var ps = sfx.play(); if (ps && ps.catch) ps.catch(function () {});
@@ -301,6 +316,7 @@ button { font:inherit; cursor:pointer; }
   function openMenu() {
     S.token++; S.state = "menu"; hideCont(); stopAudio(false); try { vid.pause(); } catch (e) {}
     menu.classList.remove("hide");
+    markLast();
   }
   var pendingStart = null;
   function askStart(fn) { pendingStart = fn; startEl.classList.remove("hide"); }
@@ -319,14 +335,53 @@ button { font:inherit; cursor:pointer; }
   }, 200);
   cont.addEventListener("click", function () { ensureCtx(); advance(); });
   document.getElementById("bmenu").addEventListener("click", openMenu);
+  document.getElementById("bprev").addEventListener("click", function () { navStep(-1); });
+  document.getElementById("bnext").addEventListener("click", function () { navStep(1); });
   document.getElementById("bskip").addEventListener("click", function () { ensureCtx(); skipToFreeze(); });
   document.addEventListener("keydown", function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     ensureCtx();
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+      if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+      e.preventDefault(); navStep(e.key === "ArrowRight" ? 1 : -1); return;
+    }
     if (!menu.classList.contains("hide")) return;
     if (e.key === "Escape") { openMenu(); return; }
     if (S.state === "frozen") { e.preventDefault(); advance(); }
   });
+  /* Arrow-key navigation: Right / Left step through the full order (intro, lose, win per level, E1L1 to E3L4). */
+  var FULL = [], lastKey = null;
+  function itemKey(q) { return q.L.code + ":" + q.kind; }
+  function buildFull() { var keep = Q; buildQueue("all"); FULL = Q; Q = keep; window.__rvQ = keep; window.__rvFull = FULL; }
+  function curFullIdx() { if (!S.item) return -1; var k = itemKey(S.item); for (var j = 0; j < FULL.length; j++) if (itemKey(FULL[j]) === k) return j; return -1; }
+  function posText(it) { var j = 0; for (var n = 0; n < FULL.length; n++) if (itemKey(FULL[n]) === itemKey(it)) j = n + 1; return j; }
+  function updatePos(it) {
+    var L = it.L, cl = it.kind === "intro" ? "Intro" : it.kind === "lose" ? "Lose screen" : "Win video";
+    document.getElementById("pos").innerHTML = "E" + L.ep + "L" + L.lv + " · " + cl + " · " + posText(it) + " of " + FULL.length + "<small>" + L.name + " · ← → to move</small>";
+    lastKey = itemKey(it);
+    document.title = "E" + L.ep + "L" + L.lv + " " + cl + " · Multiplication Madness review";
+  }
+  function markLast() {
+    Array.prototype.forEach.call(document.querySelectorAll(".card.last"), function (c) { c.classList.remove("last"); });
+    if (!lastKey) return; var c = document.querySelector('.card[data-go="' + lastKey + '"]');
+    if (c) { c.classList.add("last"); try { c.scrollIntoView({ block: "center" }); } catch (e) {} }
+  }
+  function navStep(dir) {
+    ensureCtx(); buildFull();
+    var inMenu = !menu.classList.contains("hide"), j = curFullIdx(), idx;
+    if (inMenu) {
+      /* From the grid: start at the last clicked card, or at the first clip. */
+      var lk = lastKey ? FULL.findIndex(function (q) { return itemKey(q) === lastKey; }) : -1;
+      idx = lk >= 0 ? lk : 0;
+    } else {
+      if (j < 0) j = 0;
+      idx = j + dir;
+      if (idx < 0 || idx >= FULL.length) { setTag(dir < 0 ? "This is the first clip (E1L1 intro)" : "That was the last clip (E3L4 win)"); return; }
+    }
+    S.token++; S.state = "leaving"; hideCont(); stopAudio(false); try { vid.pause(); } catch (e) {}
+    Q = FULL; window.__rvQ = Q;
+    play(idx);
+  }
   function startAt(i, fz) { ensureCtx(); play(i, fz); }
   document.getElementById("playall").addEventListener("click", function () { buildQueue("all"); startAt(0); });
   eps.addEventListener("click", function (e) {
@@ -344,6 +399,7 @@ button { font:inherit; cursor:pointer; }
     if (S.state === "frozen" && S.item && S.item.kind === "lose") layoutLoseTitle(S.item);
   });
   buildQueue();
+  buildFull();
 })();
 </script>
 </body>
