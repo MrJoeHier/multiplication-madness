@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Multiplication Madness: video review</title>
+<link rel="icon" href="../assets/icon-180.jpg">
+<style>
+@font-face { font-family:"Cinzel MVM"; src:url(../assets/fonts/cinzel-900.woff2) format("woff2"); font-weight:900; font-display:swap; }
+@font-face { font-family:"Arcade MVM"; src:url(../assets/fonts/press-start-2p.woff2) format("woff2"); font-display:swap; }
+html,body { margin:0; height:100%; background:#000; color:#fff3d0; font-family:-apple-system, "Segoe UI", system-ui, sans-serif; overflow:hidden; -webkit-tap-highlight-color:transparent; }
+button { font:inherit; cursor:pointer; }
+.gold { border:2px solid #f3c65a; background:linear-gradient(#70482a, #3e2612); color:#fff3d0; font-family:"Cinzel MVM", Georgia, serif; font-weight:900; letter-spacing:.06em; box-shadow:0 5px 0 #1f1208, 0 10px 26px rgba(0,0,0,.6); border-radius:14px; }
+.gold:active { transform:translateY(3px); box-shadow:0 2px 0 #1f1208; }
+#stage { position:fixed; inset:0; background:#000; }
+#stage video, #stage img.still { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#000; }
+#stage img.still { display:none; }
+#tag { position:absolute; left:calc(12px + env(safe-area-inset-left)); top:calc(10px + env(safe-area-inset-top)); padding:6px 12px; border-radius:10px; background:rgba(0,0,0,.55); font-weight:800; font-size:clamp(.8rem,1.8vw,1rem); transition:opacity .6s; pointer-events:none; text-shadow:0 1px 2px #000; }
+#tag.dim { opacity:0; }
+#tools { position:absolute; right:calc(10px + env(safe-area-inset-right)); top:calc(10px + env(safe-area-inset-top)); display:flex; gap:8px; }
+#tools button { padding:7px 12px; border-radius:10px; border:1px solid rgba(243,198,90,.7); background:rgba(31,18,8,.72); color:#fff3d0; font-weight:700; font-size:.85rem; }
+#cont { position:absolute; left:0; right:0; margin:0 auto; bottom:calc(22px + env(safe-area-inset-bottom)); width:min(210px, 56vw); min-height:48px; font-size:1.05rem; opacity:0; transform:translateY(10px); pointer-events:none; transition:opacity .35s, transform .35s; }
+#cont.show { opacity:1; transform:none; pointer-events:auto; }
+#hint { position:absolute; left:0; right:0; margin:0 auto; width:max-content; max-width:90vw; padding:4px 12px; border-radius:10px; background:rgba(0,0,0,.6); text-align:center; bottom:calc(80px + env(safe-area-inset-bottom)); font-size:.8rem; color:#fff3d0; opacity:0; transition:opacity .35s; pointer-events:none; text-shadow:0 1px 3px #000; }
+#hint.show { opacity:1; }
+#lbox { display:none; position:absolute; pointer-events:none; z-index:2; }
+#lbox.show { display:block; }
+#lose { position:absolute; left:0; right:0; top:6%; text-align:center; font-family:"Arcade MVM", "Courier New", monospace; font-size:clamp(2.6rem, 8.6vw, 6.4rem); line-height:1.1;
+  color:#ffd43b; text-shadow:4px 4px 0 #c1121f, 8px 8px 0 #3a0a06, 0 0 34px rgba(0,0,0,.8); letter-spacing:.04em; pointer-events:none;
+  animation:yloseIn .7s .25s cubic-bezier(.2,1.8,.4,1) both, yloseWob 1.4s 1.1s ease-in-out infinite; }
+@keyframes yloseIn { from { opacity:0; transform:scale(3) rotate(-8deg); } to { opacity:1; transform:none; } }
+@keyframes yloseWob { 0%,100% { transform:rotate(-2deg) scale(1); } 50% { transform:rotate(2deg) scale(1.04); } }
+#lose.lay-left, #lose.lay-mount { font-size:calc(var(--iw) * .058); white-space:nowrap; }
+#lose.lay-left { left:3%; width:42%; top:4%; right:auto; text-align:center; }
+#lose.lay-mount { left:0; width:100%; top:2.5%; right:auto; text-align:center; }
+#lose.split { left:0; right:0; top:6%; height:0; animation:none; }
+#lose.split > span { position:absolute; top:0; transform-origin:center; font-size:min(clamp(2.6rem, 8.6vw, 6.4rem), calc(var(--iw) * .062)); white-space:nowrap;
+  animation:yloseIn .7s .25s cubic-bezier(.2,1.8,.4,1) both, yloseWob 1.4s 1.1s ease-in-out infinite; }
+#lose.split > .w1 { left:19%; transform:translateX(-50%); }
+#lose.split > .w2 { left:83.5%; transform:translateX(-50%); }
+#menu .arch { text-align:center; margin:-4px auto 14px; font-size:.88rem; }
+#menu .arch a { color:#f3c65a; }
+#menu { position:fixed; inset:0; overflow:auto; background:radial-gradient(ellipse at top, #3e2612, #1f1208 70%); padding:calc(18px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom)); box-sizing:border-box; z-index:5; -webkit-overflow-scrolling:touch; }
+#menu.hide { display:none; }
+#menu h1 { font-family:"Cinzel MVM", Georgia, serif; color:#f3c65a; text-align:center; margin:4px 0 2px; font-size:clamp(1.4rem,4.5vw,2.3rem); text-shadow:0 3px 0 #1f1208; }
+#menu .sub { text-align:center; color:#e3cfa3; font-size:.92rem; margin:0 auto 14px; max-width:640px; line-height:1.4; }
+#playall { display:block; margin:0 auto 10px; padding:12px 26px; font-size:1.15rem; }
+.opts { text-align:center; font-size:.9rem; color:#f6e7c4; margin-bottom:14px; }
+.opts label { margin:0 8px; white-space:nowrap; }
+.cat { max-width:980px; margin:0 auto 18px; background:rgba(0,0,0,.25); border:1px solid rgba(243,198,90,.35); border-radius:14px; padding:12px 14px; }
+.cat > h2 { font-family:"Cinzel MVM", Georgia, serif; color:#f3c65a; font-size:1.3rem; margin:2px 0 4px; display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.cat > h2 .cnt { font-family:-apple-system, "Segoe UI", system-ui, sans-serif; font-size:.82rem; color:#cdb88f; font-weight:600; }
+.cat > h2 button.pc { margin-left:auto; padding:6px 12px; border-radius:9px; border:1px solid rgba(243,198,90,.6); background:#2f6b2a; border-color:#7fb86a; color:#fff3d0; font-weight:700; font-size:.82rem; }
+.cat .note { color:#cdb88f; font-size:.82rem; margin:0 0 8px; line-height:1.35; }
+.ep h3 { font-family:"Cinzel MVM", Georgia, serif; color:#f3c65a; font-size:.98rem; margin:12px 0 6px; padding-top:8px; border-top:1px solid rgba(243,198,90,.2); }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:10px; }
+.card { display:block; width:100%; padding:0; text-align:left; border-radius:10px; border:1px solid rgba(243,198,90,.55); background:#3a2615; color:#fff3d0; overflow:hidden; position:relative; }
+.card:hover, .card:focus-visible { border-color:#ffd878; outline:2px solid rgba(255,216,120,.5); }
+.card .th { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#1f1208; }
+.card .pl { position:absolute; left:8px; top:8px; width:30px; height:30px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(243,198,90,.8); display:flex; align-items:center; justify-content:center; font-size:.8rem; padding-left:2px; box-sizing:border-box; }
+.card .tx { display:block; padding:6px 8px 8px; font-size:.82rem; line-height:1.3; }
+.card .tx b { display:block; font-size:.9rem; }
+.card .tx small { color:#cdb88f; font-weight:600; }
+.card.fz { background:#243d22; border-color:#7fb86a; }
+#start { position:fixed; inset:0; z-index:9; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:14px; background:rgba(0,0,0,.82); text-align:center; padding:20px; }
+#start.hide { display:none; }
+#start button { padding:14px 32px; font-size:1.3rem; }
+#start p { max-width:420px; color:#e3cfa3; line-height:1.4; margin:0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <video id="vid" playsinline muted preload="auto" disablepictureinpicture></video>
+  <img class="still" id="still" alt="">
+  <div id="lbox"><div id="lose">YOU LOSE</div></div>
+  <div id="tag"></div>
+  <div id="tools"><button id="bskip" type="button">⏭ Skip to freeze</button><button id="bmenu" type="button">☰ Menu</button></div>
+  <div id="hint">Music keeps playing · press any key or Continue</div>
+  <button id="cont" class="gold" type="button">Continue ▶</button>
+</div>
+<div id="menu">
+  <h1>Man vs. Math: Multiplication Madness · Video Review</h1>
+  <p class="sub">Every intro clip, lose screen, and win clip in the live game: 12 of each, grouped by category and then by episode and level. Tap any card to play it. <b>Continue</b> moves on to the next one in that category. Intros and wins freeze at the end with the music still going; lose screens show the still with the lose sting.</p>
+  <button id="playall" class="gold" type="button">▶ Play all from the start</button>
+  <p class="arch"><a href="../">Back to the game</a></p>
+  <div id="eps"></div>
+</div>
+<div id="start" class="hide"><button class="gold" id="bstart" type="button">▶ Tap to start</button><p>Turn your sound up. Your phone's silent switch can mute it.</p></div>
+<video id="pre" muted playsinline preload="auto" style="display:none"></video>
+<script src="levels.js?v=mm1"></script>
+<script>
+(function () {
+  "use strict";
+  var EPN = window.EPN;
+  var vid = document.getElementById("vid"), still = document.getElementById("still"), tag = document.getElementById("tag"),
+      cont = document.getElementById("cont"), hint = document.getElementById("hint"), menu = document.getElementById("menu"),
+      loseTxt = document.getElementById("lose"), pre = document.getElementById("pre"), startEl = document.getElementById("start");
+  var aud = new Audio(); aud.preload = "auto"; aud.loop = false; aud.setAttribute("playsinline", ""); window.__rvAud = aud;
+  /* SFX is a second Audio element: video stays muted, music is `aud`, SFX plays with the music and is never used to duck it. */
+  var sfx = new Audio(); sfx.preload = "auto"; sfx.loop = false; sfx.setAttribute("playsinline", ""); window.__rvSfx = sfx;
+  var ctx = null, gain = null;
+  function ensureCtx() {
+    if (ctx) { if (ctx.state === "suspended") ctx.resume(); return; }
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
+      gain = ctx.createGain(); ctx.createMediaElementSource(aud).connect(gain); gain.connect(ctx.destination);
+    } catch (e) { ctx = null; gain = null; }
+  }
+  // Build the play list
+  var Q = [];
+  /* One intro, one lose still (when the option is on), and one win per level, then the next level. */
+  function secs(d) { return Math.round(d) + "s"; }
+  function arr(x) { return Array.isArray(x) ? x : x ? [x] : []; }
+  /* mode: "all" = intro, lose, win for each level in turn; otherwise one category (intro | lose | win) in level order. */
+  function buildQueue(mode) {
+    Q = []; mode = mode || "all";
+    LEVELS.forEach(function (L) {
+      if (mode === "all" || mode === "intro") arr(L.intro).forEach(function (c, k) { Q.push({ kind: "intro", L: L, k: k, c: c }); });
+      if (mode === "all" || mode === "lose") arr(L.lose).forEach(function (x, k) { Q.push({ kind: "lose", L: L, k: k, s: x }); });
+      if (mode === "all" || mode === "win") arr(L.win).forEach(function (c, k) { Q.push({ kind: "win", L: L, k: k, c: c }); });
+    });
+    window.__rvQ = Q;
+  }
+  // Menu: categories, then episodes, then levels
+  var eps = document.getElementById("eps"), html = "";
+  var CATS = [
+    { id: "intro", title: "Intros", note: "14.8-second clip with the level-intro music and Rex's narration. Freezes on the final beat (10.83 s); Continue plays on.", thumb: function (L) { return L.intro[0].p; }, label: "intro" },
+    { id: "lose", title: "Lose Screens", note: "A still picture with the lose sting (about 3.4 s of sound) and the YOU LOSE title, the same as in the game.", thumb: function (L) { return L.lose[0].img; }, label: "lose" },
+    { id: "win", title: "Win Videos", note: "12.4 to 15-second clip with the main theme and sound effects. Freezes on the last frame with the music still going.", thumb: function (L) { return L.win[0].p; }, label: "win" }
+  ];
+  CATS.forEach(function (C) {
+    html += '<section class="cat" id="cat-' + C.id + '"><h2>' + C.title + ' <span class="cnt">' + LEVELS.length + ' total</span>' +
+      '<button class="pc" type="button" data-all="' + C.id + '">▶ Play all ' + C.title.toLowerCase() + '</button></h2><p class="note">' + C.note + '</p>';
+    [1, 2, 3].forEach(function (e) {
+      html += '<div class="ep"><h3>' + EPN[e] + '</h3><div class="grid">';
+      LEVELS.filter(function (L) { return L.ep === e; }).forEach(function (L) {
+        html += '<button type="button" class="card" data-go="' + L.code + ':' + C.id + '"><img class="th" loading="lazy" alt="" src="' + C.thumb(L) + '"><span class="pl">▶</span>' +
+          '<span class="tx"><b>' + L.code + ' · ' + L.name + '</b><small>Level ' + L.lv + ' · ' + L.desc + '</small></span></button>';
+      });
+      html += '</div></div>';
+    });
+    html += '</section>';
+  });
+  eps.innerHTML = html;
+  var S = { i: -1, state: "menu", item: null, frozenAt: null, token: 0 };
+  window.__rv = S;
+  function setTag(t) { tag.textContent = t; tag.classList.remove("dim"); clearTimeout(setTag.t); setTag.t = setTimeout(function () { tag.classList.add("dim"); }, 3500); }
+  function hideCont() { cont.classList.remove("show"); hint.classList.remove("show"); }
+  var touch = matchMedia("(hover: none)").matches;
+  function showCont(isWin) {
+    cont.classList.add("show"); document.getElementById("bskip").style.visibility = "hidden";
+    hint.textContent = isWin && !aud.ended && !aud.paused ? "♪ Music keeps playing · " + (touch ? "tap Continue" : "press any key or Continue") : (touch ? "Tap Continue" : "Press any key or Continue");
+    hint.classList.add("show");
+  }
+  function stopSfx() {
+    try { sfx.pause(); } catch (e) {}
+    try { sfx.removeAttribute("src"); sfx.load(); } catch (e) {}
+  }
+  function stopAudio(fade) {
+    return new Promise(function (res) {
+      stopSfx();
+      if (aud.paused || aud.ended || !fade) { aud.pause(); if (gain) gain.gain.value = 1; return res(); }
+      if (gain && ctx) {
+        var t = ctx.currentTime; gain.gain.cancelScheduledValues(t); gain.gain.setValueAtTime(gain.gain.value, t); gain.gain.linearRampToValueAtTime(0, t + 0.5);
+        setTimeout(function () { aud.pause(); gain.gain.cancelScheduledValues(ctx.currentTime); gain.gain.value = 1; res(); }, 520);
+      } else {
+        var v0 = aud.volume, t0 = performance.now();
+        (function step() { var k = (performance.now() - t0) / 500; if (k >= 1) { aud.pause(); aud.volume = v0; return res(); } aud.volume = v0 * (1 - k); requestAnimationFrame(step); })();
+      }
+    });
+  }
+  function preloadNext() {
+    var n = Q[S.i + 1]; if (n && n.c) { pre.src = n.c.v; pre.load(); }
+  }
+  /* Intros freeze on the Suno intro theme's final downbeat (10.830 s; first 24 fps frame at/after it = frame 260),
+     not at the end of the file; the music keeps playing its reverb/fade over the freeze until Continue. */
+  var INTRO_BEAT = 10.830, INTRO_BEAT_FRAME = 260 / 24 + 0.001;
+  function freeze(atBeat) {
+    if (S.state !== "playing") return;
+    S.state = "frozen"; S.frozenAt = aud.currentTime;
+    try { vid.pause(); } catch (e) {}
+    if (atBeat === true) { try { var dd = Math.abs(vid.currentTime - INTRO_BEAT_FRAME); if (dd > 0.002 && dd < 0.3) vid.currentTime = INTRO_BEAT_FRAME; } catch (e) {} }
+    showCont(S.item.kind === "win" || S.item.kind === "intro");
+  }
+  (function beatWatch() {
+    if (S.state === "playing" && S.item && S.item.kind === "intro" && !vid.paused) {
+      var pos = !aud.paused && !aud.ended ? aud.currentTime : vid.currentTime;
+      if (pos >= INTRO_BEAT - 0.008) freeze(true);
+    }
+    requestAnimationFrame(beatWatch);
+  })();
+
+  var lbox = document.getElementById("lbox");
+  function resetLoseTitle() {
+    loseTxt.className = "";
+    loseTxt.removeAttribute("style");
+    loseTxt.innerHTML = "YOU LOSE";
+    lbox.className = "";
+    lbox.removeAttribute("style");
+  }
+  function layoutLoseTitle(it) {
+    resetLoseTitle();
+    var apply = function () {
+      if (S.item !== it) return;
+      var stageEl = document.getElementById("stage");
+      var stage = stageEl.getBoundingClientRect();
+      var box = still.getBoundingClientRect();
+      if (!box.width) return;
+      /* object-fit:contain — use the visible still, not the element's letterbox box */
+      var r = box, nw = still.naturalWidth, nh = still.naturalHeight;
+      if (nw && nh) {
+        var sc = Math.min(box.width / nw, box.height / nh);
+        var w = nw * sc, h = nh * sc;
+        r = { left: box.left + (box.width - w) / 2, top: box.top + (box.height - h) / 2, width: w, height: h };
+      }
+      lbox.style.left = (r.left - stage.left) + "px";
+      lbox.style.top = (r.top - stage.top) + "px";
+      lbox.style.width = r.width + "px";
+      lbox.style.height = r.height + "px";
+      lbox.style.setProperty("--iw", r.width + "px");
+      lbox.className = "show";
+      var s = it && it.s || {};
+      if (s.loseSplit) {
+        loseTxt.className = "split";
+        loseTxt.innerHTML = '<span class="w1">YOU</span><span class="w2">LOSE</span>';
+      } else if (s.loseLay === "left") {
+        loseTxt.className = "lay-left";
+      } else if (s.loseLay === "mount") {
+        loseTxt.className = "lay-mount";
+      }
+    };
+    if (still.complete && still.naturalWidth) apply();
+    still.addEventListener("load", apply, { once: true });
+    requestAnimationFrame(function () { requestAnimationFrame(apply); });
+  }
+  function play(i, toFreeze) {
+    var it = Q[i]; if (!it) { return openMenu(); }
+    var tok = ++S.token; S.i = i; S.item = it; hideCont(); menu.classList.add("hide");
+    var L = it.L,
+        label = (it.kind === "intro" ? "intro " : it.kind === "lose" ? "lose " : "win ") + L.code + " · " + L.name;
+    setTag(label);
+    if (it.kind === "lose") {
+      S.state = "frozen"; vid.style.display = "none"; vid.removeAttribute("src"); vid.load();
+      still.src = it.s.img; still.style.display = "block"; lbox.classList.add("show");
+      stopSfx(); aud.src = it.s.sting; aud.load();
+      var sp = aud.play(); if (sp && sp.catch) sp.catch(function () { askStart(function () { play(i, toFreeze); }); });
+      layoutLoseTitle(it);
+      setTimeout(function () { if (tok === S.token) showCont(false); }, toFreeze ? 0 : 900);
+      document.getElementById("bskip").style.visibility = "hidden";
+      preloadNext(); return;
+    }
+    document.getElementById("bskip").style.visibility = "visible";
+    still.style.display = "none"; vid.style.display = "block";
+    resetLoseTitle();
+    S.state = "loading";
+    vid.src = it.c.v; aud.src = it.c.a; vid.load(); aud.load();
+    var hasSfx = !!it.c.sfx;
+    var need = hasSfx ? 3 : 2, go = function () {
+      if (--need || tok !== S.token) return;
+      S.state = "playing";
+      if (toFreeze) { skipToFreeze(); return; }
+      vid.currentTime = 0; aud.currentTime = 0;
+      if (hasSfx) { try { sfx.currentTime = 0; } catch (e) {} }
+      var p1 = vid.play(), p2 = aud.play();
+      if (p2 && p2.catch) p2.catch(function () { askStart(function () { play(i, toFreeze); }); });
+      if (p1 && p1.catch) p1.catch(function () {});
+      if (hasSfx) { var p3 = sfx.play(); if (p3 && p3.catch) p3.catch(function () {}); }
+    };
+    vid.addEventListener("loadeddata", go, { once: true });
+    aud.addEventListener("canplay", go, { once: true });
+    if (hasSfx) {
+      sfx.addEventListener("canplay", go, { once: true });
+      sfx.addEventListener("error", go, { once: true });
+      sfx.src = it.c.sfx;
+      sfx.load();
+    } else { stopSfx(); }
+    preloadNext();
+  }
+  function skipToFreeze() {
+    var it = S.item; if (!it || !it.c || (S.state !== "playing" && S.state !== "loading")) return;
+    S.state = "playing";
+    var d = it.c.d, tok = S.token;
+    try { vid.pause(); } catch (e) {}
+    var intro = it.kind === "intro", target = intro ? Math.min(INTRO_BEAT_FRAME, (vid.duration || d) - 0.001) : Math.max(0, (vid.duration || d) - 0.001);
+    vid.addEventListener("seeked", function () { if (tok === S.token) freeze(); }, { once: true });
+    vid.currentTime = target;
+    if (it.kind === "win" || intro) {
+      aud.currentTime = intro ? INTRO_BEAT : d; var p = aud.play(); if (p && p.catch) p.catch(function () { askStart(function () { aud.play(); }); });
+      if (it.c.sfx) {
+        try { sfx.currentTime = intro ? INTRO_BEAT : Math.max(0, (sfx.duration || d) - 0.05); } catch (e) {}
+        var ps = sfx.play(); if (ps && ps.catch) ps.catch(function () {});
+      }
+    } else { aud.pause(); }
+  }
+  function advance() {
+    if (S.state !== "frozen") return;
+    S.state = "leaving"; hideCont();
+    stopAudio(true).then(function () { play(S.i + 1); });
+  }
+  function openMenu() {
+    S.token++; S.state = "menu"; hideCont(); stopAudio(false); try { vid.pause(); } catch (e) {}
+    menu.classList.remove("hide");
+  }
+  var pendingStart = null;
+  function askStart(fn) { pendingStart = fn; startEl.classList.remove("hide"); }
+  document.getElementById("bstart").addEventListener("click", function () { startEl.classList.add("hide"); ensureCtx(); var f = pendingStart; pendingStart = null; if (f) f(); });
+  vid.addEventListener("ended", function () { freeze(); });
+  // Safety net: if the picture stalls but time is past the end, freeze anyway
+  setInterval(function () {
+    if (S.state === "playing" && S.item && S.item.c) {
+      if (vid.currentTime >= S.item.c.d - 0.02) freeze();
+      else if (!vid.paused && !aud.paused && Math.abs(vid.currentTime - aud.currentTime) > 0.25) vid.currentTime = aud.currentTime;
+      if (S.item.c.sfx && !sfx.paused && !sfx.ended && !aud.paused && !aud.ended && Math.abs(sfx.currentTime - aud.currentTime) > 0.25) {
+        try { sfx.currentTime = aud.currentTime; } catch (e) {}
+      }
+    }
+    if (S.state === "frozen" && S.item && S.item.kind !== "lose" && hint.classList.contains("show") && (aud.ended || aud.paused)) hint.textContent = "Music finished · " + (touch ? "tap Continue" : "press any key or Continue");
+  }, 200);
+  cont.addEventListener("click", function () { ensureCtx(); advance(); });
+  document.getElementById("bmenu").addEventListener("click", openMenu);
+  document.getElementById("bskip").addEventListener("click", function () { ensureCtx(); skipToFreeze(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    ensureCtx();
+    if (!menu.classList.contains("hide")) return;
+    if (e.key === "Escape") { openMenu(); return; }
+    if (S.state === "frozen") { e.preventDefault(); advance(); }
+  });
+  function startAt(i, fz) { ensureCtx(); play(i, fz); }
+  document.getElementById("playall").addEventListener("click", function () { buildQueue("all"); startAt(0); });
+  eps.addEventListener("click", function (e) {
+    var pa = e.target.closest("button[data-all]");
+    if (pa) { buildQueue(pa.getAttribute("data-all")); startAt(0); return; }
+    var b = e.target.closest("button[data-go]"); if (!b) return;
+    var p = b.getAttribute("data-go").split(":");
+    /* Continue after the clicked card goes on through the rest of that category. */
+    buildQueue(p[1]);
+    var idx = Q.findIndex(function (q) { return q.L.code === p[0] && q.kind === p[1]; });
+    if (idx < 0) return;
+    startAt(idx);
+  });
+  window.addEventListener("resize", function () {
+    if (S.state === "frozen" && S.item && S.item.kind === "lose") layoutLoseTitle(S.item);
+  });
+  buildQueue();
+})();
+</script>
+</body>
+</html>
