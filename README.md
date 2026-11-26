@@ -16,19 +16,19 @@ Live: <https://mrjoehier.github.io/multiplication-madness/>
 Levels 1–3 have four problems, Level 4 has two. Strength starts at 100%, drops 10% per mistake, +30% after each
 level, back to 100% after an episode. Out of strength = restart the episode; out of time = retry the level.
 
-## The multiplication scaffold (click a blank, then tap a number)
+## The multiplication scaffold (click a blank, then tap numbers)
 
 There are no step or operator buttons. The only controls in the math phase are the number tiles 0-9 under the page.
 
-1. **Click an empty answer blank** under the line, starting with the rightmost one (ones place). The blank lights up.
-2. **Tap the number tile** (0-9) that belongs in it. Placeholder zeros are ordinary blanks: click the blank, tap **0**.
-3. The factor digits are not clickable; the digit being multiplied is highlighted for you.
-4. **Carries are automatic.** When a digit you enter produces a carry (4 x 9 = 36: you enter 6), the carry shows in the small
-   box above the next top digit by itself; a final carry is written as the row's leading digit by itself.
-5. When the last partial-product row is full, the game moves to the answer row on its own: blanks for the answer, right to
-   left, with the column carries shown automatically. Finish the answer to solve the problem.
+1. **Click the rightmost empty blank of a row once** (ones place), then tap number tiles: the cursor moves left by itself.
+   Placeholder zeros are ordinary blanks (click, tap **0**). Factor digits are not clickable.
+2. **Carries are filled in by the player.** When a carry is due the cursor stops. Click the empty spot just under the line
+   (below the next top digit; nothing is drawn until you click), a small carry box appears, tap the carry, and the cursor goes back
+   to the next digit by itself. A row's last carry is written the same way at the front of the row.
+3. When the last partial-product row is full, the answer row is next: click its rightmost blank once, then keep tapping. Column
+   carries use the same click-under-the-line spots (just under the answer line).
 
-Wrong number tile or clicking a blank out of order = -10% strength and a shake. Tapping a tile before choosing a blank is only a
+Wrong number tile, a blank or carry spot clicked out of order = -10% strength and a shake. Tapping a tile before placing the cursor is only a
 friendly reminder (no penalty). Stars: no mistakes = 3, up to 2 = 2, more = 1.
 
 ## Adventures
