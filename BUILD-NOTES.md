@@ -25,3 +25,4 @@ Base: copy of division-dash main a3b2a93 index.html (4623 lines) -> being rewrit
 - NEXT: index.html rewrite (engine lines 1274-2450 of orig). map ambience: modify Ambience ep===2 to temple
 - [x] index.html core rewrite applied (levels, engine, render, input, EP_INFO, LV_INFO, narration lines); NEXT: run in browser (Playwright), fix errors; backups: /workspace/mm-build/patch/*.js, index.orig.html
 - [x] fullrun.py: all 12 levels clip->play->win->scoreboard->map->episode cards->Champion pass (2026-11-25 22:xx). Fixed: showBoard/passing timeouts. NEXT: lose screens, mobile views, leftover text grep, push
+- [x] QA step 1a (2026-11-25 late): win clips checked frame-by-frame; e2l1/e3l2/e3l3 confirmed raw2 (pixel match). Found Rex turning to camera at the very end of win-e1l3 and win-e2l3: trimmed to 12.9s / 12.4s (sfx m4a trimmed + fade to match). Originals in /tmp/wq/orig.
