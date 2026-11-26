@@ -24,3 +24,4 @@ Base: copy of division-dash main a3b2a93 index.html (4623 lines) -> being rewrit
 - [x] SFX m4a x24 in assets/sfx (sfx work: /workspace/mm-build/sfx gen_cues.py, make_sfx.py)
 - NEXT: index.html rewrite (engine lines 1274-2450 of orig). map ambience: modify Ambience ep===2 to temple
 - [x] index.html core rewrite applied (levels, engine, render, input, EP_INFO, LV_INFO, narration lines); NEXT: run in browser (Playwright), fix errors; backups: /workspace/mm-build/patch/*.js, index.orig.html
+- [x] fullrun.py: all 12 levels clip->play->win->scoreboard->map->episode cards->Champion pass (2026-11-25 22:xx). Fixed: showBoard/passing timeouts. NEXT: lose screens, mobile views, leftover text grep, push

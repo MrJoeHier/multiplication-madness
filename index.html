@@ -3044,7 +3044,7 @@ async function winLevel() {
   // Continue pressed on the freeze frame: Joe's main theme fades out quickly as the scoreboard comes up.
   RecAudio.stopCue(0.4);
   if (tok !== flowTok) return;
-  await passing; if (tok !== flowTok) return;
+  await Promise.race([passing, new Promise(r => setTimeout(r, 2500))]); if (tok !== flowTok) return; // never let a slow or blocked save stall the win flow
   await showBoard({ win: { ep: wEp, lv: wLv, stars: starsFor(miss), miss } });
   if (tok !== flowTok) return;
   Cine.hide();
@@ -3623,7 +3623,7 @@ function showBoard(o) {
   o = o || {};
   if (SB) SB.close();
   return new Promise(async res => {
-    await dbReady;
+    await Promise.race([dbReady, new Promise(r => setTimeout(r, 4000))]); // never stall a win on a slow connection
     const players = cloudMode() ? {} : await LocalDB.players().catch(() => ({}));
     const meId = Progress.cur ? (Progress.mode === "guest" ? (cloudMode() ? "guest" : null) : Progress.cur.id) : null;
     const ep = o.win ? o.win.ep : Math.max(0, Math.min(2, G.episode || 0)), E = EP_INFO[ep] || EP_INFO[0];
