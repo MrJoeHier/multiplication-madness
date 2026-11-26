@@ -1,0 +1,22 @@
+# Multiplication Madness — build progress notes (keep updated)
+Work dirs: project /workspace/multiplication-madness ; media work /workspace/mm-build/media ; scripts /workspace/mm-build/*.py ; questions log /workspace/mm-build/QUESTIONS.md
+Base: copy of division-dash main a3b2a93 index.html (4623 lines) -> being rewritten for multiplication.
+## Done
+- [x] stills (12 start frames) media/stills/eXlY-start.jpg
+- [x] 12 intros built (960x540 24fps 356fr, freeze fr260): media/intro/eXlY-intro.mp4 + -poster.jpg + -freeze.png (build_intro.py code Tp)
+- [x] 12 raw win clips (1280x720, 15s, from freeze frame): media/win/eXlY-raw.mp4 (gaze issue: e2l1,e3l2,e3l3 end looking toward camera -> trim/redo; first redo attempt 'Aborted')
+## TODO (in order)
+- [ ] finalize win clips (trim at off-camera gaze, 960x540 silent, poster)
+- [ ] 12 lose stills (GenerateImage, ref freeze frame)
+- [ ] 3 maps (horizontal, trail) + route extraction -> EP_INFO pts/path
+- [ ] 3 episode Rex portraits (+blink), title hero
+- [ ] narration x3 (edge_tts en-US-AndrewNeural), music reuse, SFX m4a (mvm-sfx synth)
+- [ ] rewrite index.html: LEVELS, multiplication engine, board render, input, text; EP_INFO/LV_INFO; Firebase collections mm_*; remove short-division UI
+- [ ] firebase/firestore.rules for mm_ collections; sw.js bump; manifest; README
+- [ ] QA (playwright): every level, math, media, mobile/desktop
+- [ ] create repo MrJoeHier/multiplication-madness, push main (author MrJoeHier <jhier@i5design.com>), enable Pages, verify live
+- redo wins (raw2) e2l1,e3l2,e3l3 generated: media/win/*-raw2.mp4
+- [x] lose stills v1 in media/lose/eXlY-lose.jpg; redone; all lose stills encoded to assets/lose-eXlY.jpg
+- [x] 3 maps in assets/map-{volcano,canyon,temple}-wide.jpg/webp; routes in BUILD-routes.json (mapwork/routes_final.json); check portrait map usage in index (map-jungle.jpg non-wide)
+- [x] win/setup mp4+posters encoded (24 files each ok), lose stills, maps, title-rex/title-hero/ep1-3-rex(+blink) NEW art in assets (2026-11-25)
+- NEXT: narration, sfx, index.html rewrite
