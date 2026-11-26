@@ -20,7 +20,7 @@ window.LEVELS = [
     win: [ { v: "../assets/win-e1l3.mp4", p: "../assets/win-e1l3-poster.jpg", a: "../assets/music/main-theme.mp3", sfx: "../assets/sfx/win-e1l3.m4a", d: 12.916667 } ]
   },
   {
-    code: "04", ep: 1, lv: 4, name: "Rendezvous Point", brief: "Solve 2 problems to reach the boat before the volcano erupts!", cap: "All aboard!", desc: "2-digit × 5-digit",
+    code: "04", ep: 1, lv: 4, name: "Volcano Rendezvous", brief: "Solve 2 problems to reach the boat before the volcano erupts!", cap: "All aboard!", desc: "2-digit × 5-digit",
     intro: [ { v: "../assets/setup-e1l4.mp4", p: "../assets/setup-e1l4-poster.jpg", a: "../assets/music/level-intro.mp3", sfx: "../assets/sfx/setup-e1l4.m4a", d: 14.833333 } ],
     lose: [ { img: "../assets/lose-e1l4.jpg", sting: "lose-sting.m4a" } ],
     win: [ { v: "../assets/win-e1l4.mp4", p: "../assets/win-e1l4-poster.jpg", a: "../assets/music/main-theme.mp3", sfx: "../assets/sfx/win-e1l4.m4a", d: 15.0 } ]

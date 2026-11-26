@@ -2474,7 +2474,7 @@ document.addEventListener("visibilitychange", () => { acHidden = document.hidden
 const ASSET = n => "assets/" + n;
 const DEV = /[?&]dev=1\b/.test(location.search);
 const EP_INFO = [
-  { name: "The Volcano", filter: "", soon: "", map: "map-volcano-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
+  { name: "The Volcano", filter: "", soon: "", map: "map-volcano-wide", rendezvous: "Volcano Rendezvous", startLabel: "Drop-off Location",
     pts: [[760,770],[698,641],[368,491],[1100,367],[862,183]],
     lab: [[110,10],[125,0],[-115,45],[95,40],[0,52]],
     path: [
@@ -2609,23 +2609,23 @@ const EP_INFO = [
     ] }
 ];
 const LV_INFO = [
-  { name: "Geyser Run", mapLabel: "Geyser Flats", brief: "Solve 4 problems to dodge the geysers!", winCap: "Geysers dodged!", setup: "setup-e1l1", setupSfx: "sfx/setup-e1l1.m4a", win: "win-e1l1", winSfx: "sfx/win-e1l1.m4a", lose: "lose-e1l1" },
-  { name: "Breaking Bridge", mapLabel: "Cliff Gorge", brief: "Solve 4 problems to cross the breaking bridge!", winCap: "Made it across!", setup: "setup-e1l2", setupSfx: "sfx/setup-e1l2.m4a", win: "win-e1l2", winSfx: "sfx/win-e1l2.m4a", lose: "lose-e1l2" },
-  { name: "Log Slide", mapLabel: "Waterfall Ridge", brief: "Solve 4 problems to dodge the tumbling logs!", winCap: "Dodged them all!", setup: "setup-e1l3", setupSfx: "sfx/setup-e1l3.m4a", win: "win-e1l3", winSfx: "sfx/win-e1l3.m4a", lose: "lose-e1l3" },
-  { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the boat before the volcano erupts!", winCap: "All aboard!", setup: "setup-e1l4", setupSfx: "sfx/setup-e1l4.m4a", win: "win-e1l4", winSfx: "sfx/win-e1l4.m4a", lose: "lose-e1l4" }
+  { name: "Geyser Run", mapLabel: "Geyser Run", brief: "Solve 4 problems to dodge the geysers!", winCap: "Geysers dodged!", setup: "setup-e1l1", setupSfx: "sfx/setup-e1l1.m4a", win: "win-e1l1", winSfx: "sfx/win-e1l1.m4a", lose: "lose-e1l1" },
+  { name: "Breaking Bridge", mapLabel: "Breaking Bridge", brief: "Solve 4 problems to cross the breaking bridge!", winCap: "Made it across!", setup: "setup-e1l2", setupSfx: "sfx/setup-e1l2.m4a", win: "win-e1l2", winSfx: "sfx/win-e1l2.m4a", lose: "lose-e1l2" },
+  { name: "Log Slide", mapLabel: "Log Slide", brief: "Solve 4 problems to dodge the tumbling logs!", winCap: "Dodged them all!", setup: "setup-e1l3", setupSfx: "sfx/setup-e1l3.m4a", win: "win-e1l3", winSfx: "sfx/win-e1l3.m4a", lose: "lose-e1l3" },
+  { name: "Volcano Rendezvous", mapLabel: "Volcano Rendezvous", brief: "Solve 2 problems to reach the boat before the volcano erupts!", winCap: "All aboard!", setup: "setup-e1l4", setupSfx: "sfx/setup-e1l4.m4a", win: "win-e1l4", winSfx: "sfx/win-e1l4.m4a", lose: "lose-e1l4" }
 ];
 const JUNGLE_PTS = EP_INFO[0].pts;
 const EP_LV = {
   1: [
-    { name: "Flash Flood", mapLabel: "Canyon Floor", brief: "Solve 4 problems to outrun the flash flood!", winCap: "High and dry!", setup: "setup-e2l1", setupSfx: "sfx/setup-e2l1.m4a", win: "win-e2l1", winSfx: "sfx/win-e2l1.m4a", lose: "lose-e2l1" },
-    { name: "Dust Wall", mapLabel: "Dune Sea", brief: "Solve 4 problems to outlast the sandstorm!", winCap: "Storm survived!", setup: "setup-e2l2", setupSfx: "sfx/setup-e2l2.m4a", win: "win-e2l2", winSfx: "sfx/win-e2l2.m4a", lose: "lose-e2l2" },
-    { name: "Broken Ledge", mapLabel: "Mesa Ledge", brief: "Solve 4 problems to leap the crumbling ledge!", winCap: "Up and over!", setup: "setup-e2l3", setupSfx: "sfx/setup-e2l3.m4a", win: "win-e2l3", winSfx: "sfx/win-e2l3.m4a", lose: "lose-e2l3" },
+    { name: "Flash Flood", mapLabel: "Flash Flood", brief: "Solve 4 problems to outrun the flash flood!", winCap: "High and dry!", setup: "setup-e2l1", setupSfx: "sfx/setup-e2l1.m4a", win: "win-e2l1", winSfx: "sfx/win-e2l1.m4a", lose: "lose-e2l1" },
+    { name: "Dust Wall", mapLabel: "Dust Wall", brief: "Solve 4 problems to outlast the sandstorm!", winCap: "Storm survived!", setup: "setup-e2l2", setupSfx: "sfx/setup-e2l2.m4a", win: "win-e2l2", winSfx: "sfx/win-e2l2.m4a", lose: "lose-e2l2" },
+    { name: "Broken Ledge", mapLabel: "Broken Ledge", brief: "Solve 4 problems to leap the crumbling ledge!", winCap: "Up and over!", setup: "setup-e2l3", setupSfx: "sfx/setup-e2l3.m4a", win: "win-e2l3", winSfx: "sfx/win-e2l3.m4a", lose: "lose-e2l3" },
     { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the jeep through the boulders!", winCap: "Rescued in the nick of time!", setup: "setup-e2l4", setupSfx: "sfx/setup-e2l4.m4a", win: "win-e2l4", winSfx: "sfx/win-e2l4.m4a", lose: "lose-e2l4" }
   ],
   2: [
-    { name: "Crumbling Stairs", mapLabel: "Sinkhole Edge", brief: "Solve 4 problems to climb the crumbling stairs!", winCap: "Top of the stairs!", setup: "setup-e3l1", setupSfx: "sfx/setup-e3l1.m4a", win: "win-e3l1", winSfx: "sfx/win-e3l1.m4a", lose: "lose-e3l1" },
-    { name: "Stone Wheel", mapLabel: "River Bend", brief: "Solve 4 problems to outrun the rolling stone wheel!", winCap: "Not today, stone wheel!", setup: "setup-e3l2", setupSfx: "sfx/setup-e3l2.m4a", win: "win-e3l2", winSfx: "sfx/win-e3l2.m4a", lose: "lose-e3l2" },
-    { name: "Flooded Passage", mapLabel: "Temple Steps", brief: "Solve 4 problems to cross the flooding passage!", winCap: "Through the flood!", setup: "setup-e3l3", setupSfx: "sfx/setup-e3l3.m4a", win: "win-e3l3", winSfx: "sfx/win-e3l3.m4a", lose: "lose-e3l3" },
+    { name: "Crumbling Stairs", mapLabel: "Crumbling Stairs", brief: "Solve 4 problems to climb the crumbling stairs!", winCap: "Top of the stairs!", setup: "setup-e3l1", setupSfx: "sfx/setup-e3l1.m4a", win: "win-e3l1", winSfx: "sfx/win-e3l1.m4a", lose: "lose-e3l1" },
+    { name: "Stone Wheel", mapLabel: "Stone Wheel", brief: "Solve 4 problems to outrun the rolling stone wheel!", winCap: "Not today, stone wheel!", setup: "setup-e3l2", setupSfx: "sfx/setup-e3l2.m4a", win: "win-e3l2", winSfx: "sfx/win-e3l2.m4a", lose: "lose-e3l2" },
+    { name: "Flooded Passage", mapLabel: "Flooded Passage", brief: "Solve 4 problems to cross the flooding passage!", winCap: "Through the flood!", setup: "setup-e3l3", setupSfx: "sfx/setup-e3l3.m4a", win: "win-e3l3", winSfx: "sfx/win-e3l3.m4a", lose: "lose-e3l3" },
     { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the rescue helicopter!", winCap: "You've done it — way to go!", setup: "setup-e3l4", setupSfx: "sfx/setup-e3l4.m4a", win: "win-e3l4", winSfx: "sfx/win-e3l4.m4a", lose: "lose-e3l4" }
   ]
 };
