@@ -1,6 +1,6 @@
 # Man vs. Math: Multiplication Madness
 
-The third Man vs. Math classroom game (after *Surviving Long Division* and the fact-families game), starring explorer
+The next Man vs. Math classroom game (after *Surviving Long Division*), starring explorer
 Rex Ranger. 7th-grade multi-digit multiplication, 3 episodes × 4 levels, played in the browser (iPad, phone, desktop).
 
 Live: <https://mrjoehier.github.io/multiplication-madness/>
