@@ -6,9 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
-<title>Man vs. Math: Surviving Long Division</title>
+<title>Man vs. Math: Multiplication Madness</title>
 <meta name="theme-color" content="#0b0805">
-<meta name="apple-mobile-web-app-title" content="Man vs. Math">
+<meta name="apple-mobile-web-app-title" content="Mult. Madness">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
@@ -1172,13 +1172,22 @@ body.sdmode #inner { grid-template-columns:1fr !important; grid-template-areas:"
 body.sdsw-on #work #prompt { padding-right:calc(var(--sdw, 0px) + 12px); min-height:calc(var(--sdh, 0px) + 4px); box-sizing:border-box; }
 body.sdsw-on.sdnote-on #work #prompt { padding-right:14px; padding-top:calc(var(--sdh, 0px) + 6px); min-height:0; }
 @media (max-width: 600px) and (orientation: portrait) { body.sdsw-on #work #prompt { padding-right:8px; padding-top:calc(var(--sdh, 0px) + 6px); min-height:0; } }
+
+/* ---- Multiplication Madness: three step buttons with labels ---- */
+.steps { grid-template-columns:repeat(3, 1fr) !important; }
+.step { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+.step .sl { font-size:.62rem; font-weight:700; letter-spacing:.02em; line-height:1; opacity:.9; font-family:-apple-system, "Segoe UI", system-ui, sans-serif; }
+@media (orientation: landscape) and (max-height: 520px) { .step .sl { font-size:.5rem; } }
+.cell.zero { opacity:.85; }
+.cell.colhi { background:var(--accent-soft); border-radius:8px; pointer-events:none; z-index:0; }
+.cell.stone.cur { box-shadow:0 0 0 3px var(--accent); border-radius:10px; }
 </style>
 </head>
 <body>
 <div id="bootcover" role="status" aria-live="polite" aria-label="Loading"><div class="spin"></div></div>
 <div id="app">
   <header>
-    <div class="brand"><span class="mvm">MAN <i>vs.</i> MATH</span> <small id="h-lvname">Unspoken River</small></div>
+    <div class="brand"><span class="mvm">MAN <i>vs.</i> MATH</span> <small id="h-lvname">Geyser Run</small></div>
     <div class="chips">
       <div class="chip"><span id="h-level">E1 · L1</span></div>
       <div class="pie timer" id="h-time" aria-label="Time left"><div class="wedge"></div><span class="tv">4:00</span></div>
@@ -1192,52 +1201,20 @@ body.sdsw-on.sdnote-on #work #prompt { padding-right:14px; padding-top:calc(var(
     <div id="pin" hidden></div>
     <div id="board"></div>
   </main>
-  <div id="sdsw" hidden aria-label="Division mode"><div class="sdtg">
-    <button type="button" class="sdlab l hand" data-sdmode="long">Long<br>Division</button>
-    <button type="button" id="sdtoggle" role="switch" aria-checked="false" aria-label="Short division">
-      <svg viewBox="0 0 100 56" aria-hidden="true">
-        <defs>
-          <pattern id="sdhatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="6" stroke="currentColor" stroke-width="1.1" opacity=".55"/></pattern>
-          <clipPath id="sdclip"><path d="M15 7 C36 4 64 8 85 6 C97 7 98 22 97 29 C98 43 91 49 84 49 C62 51 36 48 16 50 C5 49 2 37 3 28 C2 15 6 7 15 7 Z"/></clipPath>
-        </defs>
-        <rect class="sdshade" x="0" y="0" width="100" height="56" fill="url(#sdhatch)" clip-path="url(#sdclip)"/>
-        <path class="sdline" d="M15 7 C36 4 64 8 85 6 C97 7 98 22 97 29 C98 43 91 49 84 49 C62 51 36 48 16 50 C5 49 2 37 3 28 C2 15 6 7 15 7 Z"/>
-        <path class="sdline thin" d="M17 5.5 C40 6 66 4.5 86 7.5 C99 10 99.5 40 90 47.5 C70 52 40 49 14 48.5 C3 46 1 20 9 10"/>
-        <g class="sdknob">
-          <path class="sdkfill" d="M28 11 C38 11 44 19 43.5 28 C43 38 36 45 27 44.5 C17 44 11 37 11.5 27.5 C12 18 18 11 28 11 Z"/>
-          <path class="sdline" d="M28 11 C38 11 44 19 43.5 28 C43 38 36 45 27 44.5 C17 44 11 37 11.5 27.5 C12 18 18 11 28 11 Z"/>
-          <path class="sdline thin" d="M24 12.5 C34 9.5 45 17 42.5 30 C41 40 30 46 21 42"/>
-          <path class="sdline thin" d="M33 38 L38 33 M30 41 L40 31 M36 40 L41 35"/>
-        </g>
-      </svg>
-    </button>
-    <button type="button" class="sdlab r hand" data-sdmode="short">Short<br>Division</button>
-  </div></div>
   <section id="input">
     <div id="inner">
       <div class="steps">
-        <button class="step" data-step="divide" aria-label="Divide">÷</button>
-        <button class="step" data-step="multiply" aria-label="Multiply">×</button>
-        <button class="step" data-step="subtract" aria-label="Subtract">−</button>
-        <button class="step" data-step="compare" aria-label="Compare">C</button>
-        <button class="step" data-step="bring" aria-label="Bring down">↓</button>
+        <button class="step" data-step="multiply" aria-label="Multiply">×<span class="sl">Multiply</span></button>
+        <button class="step" data-step="zero" aria-label="Placeholder zero">0<span class="sl">Place holder</span></button>
+        <button class="step" data-step="add" aria-label="Add">+<span class="sl">Add</span></button>
       </div>
       <div class="padwrap">
-      <div id="cmpbar" class="cmpbar" hidden role="group" aria-label="Compare">
-        <div class="cq">Smaller than divisor?</div>
-        <div class="crow"><button id="cmp-yes" class="cbtn yes" data-act="yes">Yes</button><button id="cmp-no" class="cbtn no" data-act="no">No</button></div>
-      </div>
       <div class="pad">
         <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
         <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
         <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
         <button class="key zero" data-key="0">0</button>
       </div>
-      </div>
-      <div class="ctx">
-        <button class="ctxb" id="btn-rem">Remainder</button>
-        <button class="ctxb" id="btn-done">Done</button>
-        <button class="ctxb cant hidden" id="btn-cant">Can't subtract</button>
       </div>
     </div>
   </section>
@@ -1262,8 +1239,8 @@ const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 
 /* ================= settings / storage ================= */
 const store = {
-  get(k, def) { try { const v = localStorage.getItem("mvm1." + k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
-  set(k, v) { try { localStorage.setItem("mvm1." + k, JSON.stringify(v)); } catch (e) {} }
+  get(k, def) { try { const v = localStorage.getItem("mm1." + k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem("mm1." + k, JSON.stringify(v)); } catch (e) {} }
 };
 const settings = { theme: store.get("theme", "journal"), format: "remainders", sound: store.get("sound", true), music: store.get("music", true), haptics: store.get("haptics", true) };
 const THEMES = [["journal", "Explorer's journal"], ["notebook", "Notebook"], ["sand", "Sand"], ["slate", "Slate"]];
@@ -1271,72 +1248,70 @@ document.documentElement.setAttribute("data-theme", settings.theme);
 let ANIM = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0.35 : 1;
 
 /* ================= levels ================= */
-const LEVELS = [
-  { name: "One-digit divisors", desc: "1-digit ÷ into 3- and 4-digit numbers", shapes: [[1, 3], [1, 3], [1, 4], [1, 4]] },
-  { name: "Two-digit divisors", desc: "2-digit ÷ into 4- and 5-digit numbers", shapes: [[2, 4], [2, 4], [2, 5], [2, 5]] },
-  { name: "Three-digit divisors", desc: "3-digit ÷ into 5- and 6-digit numbers", shapes: [[3, 5], [3, 5], [3, 6], [3, 6]] },
-  { name: "Four-digit divisors", desc: "4-digit ÷ into 6-digit numbers", shapes: [[4, 6], [4, 6]] }
+/* shape = [bottom digits (rows of partial products), top digits]. Level 4 of every episode has two problems. */
+const LEVELS_EP = [
+  [{ name: "2 × 2 digits", desc: "2-digit × 2-digit", shapes: [[2, 2], [2, 2], [2, 2], [2, 2]] },
+   { name: "2 × 3 digits", desc: "2-digit × 3-digit", shapes: [[2, 3], [2, 3], [2, 3], [2, 3]] },
+   { name: "2 × 4 digits", desc: "2-digit × 4-digit", shapes: [[2, 4], [2, 4], [2, 4], [2, 4]] },
+   { name: "2 × 5 digits", desc: "2-digit × 5-digit", shapes: [[2, 5], [2, 5]] }],
+  [{ name: "3 × 3 digits", desc: "3-digit × 3-digit", shapes: [[3, 3], [3, 3], [3, 3], [3, 3]] },
+   { name: "3 × 4 digits", desc: "3-digit × 4-digit", shapes: [[3, 4], [3, 4], [3, 4], [3, 4]] },
+   { name: "3 × 5 digits", desc: "3-digit × 5-digit", shapes: [[3, 5], [3, 5], [3, 5], [3, 5]] },
+   { name: "3 × 6 digits", desc: "3-digit × 6-digit", shapes: [[3, 6], [3, 6]] }],
+  [{ name: "4 × 4 digits", desc: "4-digit × 4-digit", shapes: [[4, 4], [4, 4], [4, 4], [4, 4]] },
+   { name: "4 × 5 digits", desc: "4-digit × 5-digit", shapes: [[4, 5], [4, 5], [4, 5], [4, 5]] },
+   { name: "4 × 6 digits", desc: "4-digit × 6-digit", shapes: [[4, 6], [4, 6], [4, 6], [4, 6]] },
+   { name: "4 × 7 digits", desc: "4-digit × 7-digit", shapes: [[4, 7], [4, 7]] }]
 ];
+const LEVELS = LEVELS_EP[0]; /* four levels per episode (names/descriptions per episode: lvCfg) */
+const lvCfg = (ep, lv) => (LEVELS_EP[ep] || LEVELS_EP[0])[lv] || LEVELS_EP[0][0];
+const PLACES = ["ones", "tens", "hundreds", "thousands"];
 
 /* ================= math engine ================= */
-function subNeedsBorrow(top, bot) {
-  const T = top.split("").map(Number).reverse(), B = bot.split("").map(Number).reverse();
-  let br = 0;
-  for (let k = 0; k < T.length; k++) { const t = T[k] - br, b = B[k] || 0; if (t < b) return true; br = 0; }
-  return false;
-}
-function analyze(D, d) {
-  const digs = D.split("").map(Number), n = digs.length;
-  let p = 0, cur = digs[0];
-  while (cur < d && p < n - 1) { p++; cur = cur * 10 + digs[p]; }
-  const cycles = []; let topStr = D.slice(0, p + 1), pos = p, zero = false, borrow = false;
-  for (;;) {
-    const top = parseInt(topStr, 10), q = Math.floor(top / d), prod = q * d, diff = top - prod;
-    if (q === 0) zero = true;
-    if (subNeedsBorrow(topStr, String(prod))) borrow = true;
-    cycles.push({ pos, topStr, q, prod, diff });
-    if (pos >= n - 1) break;
-    pos++; topStr = String(diff) + digs[pos];
-  }
-  return { p, cycles, quotient: cycles.map(c => c.q).join(""), remainder: cycles[cycles.length - 1].diff, zero, borrow, n, valid: parseInt(D.slice(0, p + 1), 10) >= d };
-}
-/* Multiply scaffold: ones digit, then carry (only if non-zero). Never a full multi-digit product. */
-function mulSteps(q, d) {
-  const ds = String(d).split("").map(Number).reverse(); // from right
-  if (q === 0) return [{ kind: "write", place: 0, val: 0, j: 0, c: 0 }];
-  const steps = []; let c = 0;
-  for (let j = 0; j < ds.length; j++) {
-    const t = q * ds[j] + c;
-    steps.push({ kind: "write", place: j, val: t % 10, j, c });
+/* Row k of the work = top × (k-th digit of the bottom number, ones first), shifted k places. */
+function rowSteps(Ad, b, k) {
+  const n = Ad.length, steps = []; let c = 0;
+  for (let i = 0; i < n; i++) {
+    const t = Ad[i] * b + c;
+    steps.push({ kind: "write", i, col: k + i, val: t % 10, cin: c });
     const nc = Math.floor(t / 10);
-    if (nc > 0) {
-      if (j < ds.length - 1) steps.push({ kind: "carry", j: j + 1, val: nc });
-      else steps.push({ kind: "lead", place: ds.length, val: nc });
-    }
+    if (nc > 0) { if (i < n - 1) steps.push({ kind: "carry", i: i + 1, val: nc }); else steps.push({ kind: "lead", col: k + n, val: nc }); }
     c = nc;
   }
   return steps;
 }
-function genLevel(l) {
-  // Random problems in the requested shapes. About 1 in 4 divide evenly (remainder 0): one per 4-problem level, and a 50/50 chance of one in Level 4.
-  const cfg = LEVELS[l], out = [], seen = new Set(), n = cfg.shapes.length;
-  const evenIdx = n >= 4 ? ri(0, n - 1) : (Math.random() < 0.5 ? ri(0, n - 1) : -1);
-  cfg.shapes.forEach(([dl, len], idx) => {
-    const wantEven = idx === evenIdx; let pick = null;
-    for (let t = 0; t < 600 && !pick; t++) {
-      const d = dl === 1 ? ri(2, 9) : ri(Math.pow(10, dl - 1), Math.pow(10, dl) - 1);
-      let D;
-      if (wantEven) { const qlo = Math.ceil(Math.pow(10, len - 1) / d), qhi = Math.floor((Math.pow(10, len) - 1) / d); if (qlo > qhi) continue; D = ri(qlo, qhi) * d; }
-      else D = ri(Math.pow(10, len - 1), Math.pow(10, len) - 1);
-      if (D < d) continue;
-      const key = D + "/" + d; if (seen.has(key)) continue;
-      const A = analyze(String(D), d);
-      if (!A.valid) continue;
-      if (wantEven ? A.remainder !== 0 : A.remainder === 0) continue;
-      pick = { D: String(D), d, even: wantEven };
+/* The final column-by-column addition of the partial products (digits[k][col]). */
+function sumSteps(rows, L) {
+  const steps = []; let c = 0;
+  for (let col = 0; col < L; col++) {
+    let s = c; rows.forEach(r => { s += r[col] || 0; });
+    steps.push({ kind: "sum", col, val: s % 10, cin: c });
+    c = Math.floor(s / 10);
+    if (c > 0 && col < L - 1) steps.push({ kind: "scarry", col: col + 1, val: c });
+  }
+  return steps;
+}
+/* Everything the board needs to know about one problem: A (top) × B (bottom). */
+function analyze(A, B) {
+  const Ad = String(A).split("").map(Number).reverse(), Bd = String(B).split("").map(Number).reverse();
+  const rows = Bd.map((b, k) => { const st = rowSteps(Ad, b, k); const dg = {}; for (let j = 0; j < k; j++) dg[j] = 0; st.forEach(s => { if (s.kind === "write" || s.kind === "lead") dg[s.col] = s.val; }); return { b, k, steps: st, dg }; });
+  const L = String(A * B).length;
+  const sum = sumSteps(rows.map(r => r.dg), L);
+  return { Ad, Bd, n: Ad.length, m: Bd.length, rows, sum, L, product: String(A * B) };
+}
+function genLevel(ep, l) {
+  const cfg = lvCfg(ep, l), out = [], seen = new Set();
+  cfg.shapes.forEach(([m, n]) => {
+    let pick = null;
+    for (let t = 0; t < 400 && !pick; t++) {
+      let B = ""; for (let i = 0; i < m; i++) B += ri(2, 9);
+      let A = String(ri(1, 9)); for (let i = 1; i < n; i++) A += Math.random() < 0.15 ? 0 : ri(0, 9);
+      if (new Set(A.split("")).size < 2) continue;
+      const key = A + "x" + B; if (seen.has(key)) continue;
+      pick = { A, B };
     }
-    if (!pick) { const d = dl === 1 ? ri(2, 9) : ri(Math.pow(10, dl - 1), Math.pow(10, dl) - 1); pick = { D: String(ri(Math.max(d, Math.pow(10, len - 1)), Math.pow(10, len) - 1)), d }; }
-    seen.add(pick.D + "/" + pick.d); out.push(pick);
+    if (!pick) pick = { A: "1" + "7".repeat(n - 1), B: "9".repeat(m) };
+    seen.add(pick.A + "x" + pick.B); out.push(pick);
   });
   return out;
 }
@@ -1484,9 +1459,9 @@ const Ambience = (() => {
       noiseBed(ac, g, "highpass", 2800, 0.35, 0.04); // dry insects
       noiseBed(ac, g, "lowpass", 220, 0.6, 0.05); // open plain rumble
     } else {
-      noiseBed(ac, g, "bandpass", 420, 0.5, 0.12); // cold wind
-      noiseBed(ac, g, "highpass", 5000, 0.3, 0.035); // icy air
-      noiseBed(ac, g, "lowpass", 180, 0.7, 0.055); // mountain depth
+      noiseBed(ac, g, "bandpass", 900, 0.5, 0.06); // jungle canopy hush around the temple
+      noiseBed(ac, g, "highpass", 4200, 0.4, 0.03); // night insects
+      noiseBed(ac, g, "lowpass", 150, 0.7, 0.06); // deep stone hum
     }
     iv = setInterval(() => {
       if (!g || !AC || !settings.sound || gen !== myGen) return;
@@ -1500,12 +1475,12 @@ const Ambience = (() => {
       } else if (ep === 1) {
         if (r < 0.4) chirp(t, 1500 + Math.random() * 900, 0.18);
         else if (r < 0.55) twitter(t);
-        else if (r < 0.7) rumble(t, 55 + Math.random() * 25, 1.1, 0.3); // distant lion
+        else if (r < 0.7) rumble(t, 55 + Math.random() * 25, 1.1, 0.3); // distant rockfall
         else water(t);
       } else {
-        if (r < 0.35) howl(t);
-        else if (r < 0.6) chirp(t, 800 + Math.random() * 500, 0.12);
-        else rumble(t, 70 + Math.random() * 30, 0.8, 0.18);
+        if (r < 0.4) water(t); // dripping stone
+        else if (r < 0.65) chirp(t, 1900 + Math.random() * 700, 0.1);
+        else rumble(t, 45 + Math.random() * 25, 1.2, 0.2);
       }
     }, 700);
   }
@@ -1524,8 +1499,8 @@ const canVibrate = typeof navigator !== "undefined" && typeof navigator.vibrate 
 function haptic(p) { if (settings.haptics && canVibrate) { try { navigator.vibrate(p); } catch (e) {} } }
 
 /* ================= game state ================= */
-const EPISODES = [{ secs: 240 }, { secs: 180 }, { secs: 120 }];
-const G = { episode: 0, timeLeft: 240, timeScale: 1, level: 0, probIdx: 0, strength: 100, problems: [], stars: [], P: null, overlay: null, started: false };
+const EPISODES = [{ secs: 180 }, { secs: 240 }, { secs: 300 }];
+const G = { episode: 0, timeLeft: 180, timeScale: 1, level: 0, probIdx: 0, strength: 100, problems: [], stars: [], P: null, overlay: null, started: false };
 const fresh = new Set();
 let lockUntil = 0;
 const locked = () => performance.now() < lockUntil;
@@ -1538,102 +1513,16 @@ function newLevel(l, keepStrength) {
     G.strength = 100;
     if (from < 100) setTimeout(() => showStrengthBoost(from, 100, { hold: 2800 }), 400 * Math.max(ANIM, 0.05));
   }
-  G.stars = []; G.lvMiss = 0; G.problems = genLevel(l); startProblem();
+  G.stars = []; G.lvMiss = 0; G.problems = genLevel(G.episode, l); startProblem();
 }
 function startProblem() {
   G.timeLeft = EPISODES[G.episode].secs; G.lastTickSec = null;
-  const pr = G.problems[G.probIdx];
-  G.P = { D: pr.D, d: pr.d, ds: String(pr.d).split("").map(Number), digs: pr.D.split("").map(Number), n: pr.D.length, A: analyze(pr.D, pr.d),
-    phase: "place", expect: "divide", cycles: [], cur: -1, remTyped: "", pens: 0, msg: null, msgCls: "", nudgeK: null, sideFading: null,
-    short: SD.on && sdAvail() && pr.d < 10, sk: 0, sq: [], sl: {}, gapHint: false };
+  const pr = G.problems[G.probIdx], A = analyze(pr.A, pr.B);
+  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "pick", expect: null, k: 0, idx: 0, sidx: 0,
+    prod: [], zeros: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "" };
+  for (let k = 0; k < A.m; k++) { G.P.prod.push({}); G.P.carries.push({}); }
   streak = 0; G.overlay = null; render();
 }
-const curCy = () => G.P.cycles[G.P.cur];
-/* ===== short division (Level 1 of every episode, one-digit divisors only) ===== */
-const SD = { on: false, noteHidden: false }; /* Long Division every time the page loads; the choice is kept only for this visit */
-const sdAvail = () => G.level === 0;
-const sdCy = () => G.P.A.cycles[G.P.sk];
-/* Swipe the switch: right = Short Division, left = Long Division. A plain tap flips it. */
-let sdSwipe = null, sdSwipeUntil = 0;
-document.addEventListener("pointerdown", e => { const t = e.target.closest && e.target.closest("#sdtoggle"); sdSwipe = t ? { x: e.clientX } : null; }, true);
-document.addEventListener("pointerup", e => {
-  if (!sdSwipe) return; const dx = e.clientX - sdSwipe.x; sdSwipe = null;
-  if (Math.abs(dx) >= 16) { sdSwipeUntil = performance.now() + 500; if ((dx > 0) !== SD.on) sdToggleInPlay(); }
-}, true);
-document.addEventListener("pointercancel", () => { sdSwipe = null; }, true);
-/* Long Division sizing = the live game: measure the prompt as it would be without room made for the switch.
-   The problem is laid out at exactly the live size, then just starts a little lower if the switch needs the room. */
-function sdNaturalPromptH() {
-  const pr = document.getElementById("prompt"); if (!pr) return 28;
-  const b = document.body, had = b.classList.contains("sdsw-on");
-  if (had) b.classList.remove("sdsw-on");
-  const h = pr.offsetHeight || 28;
-  if (had) b.classList.add("sdsw-on");
-  return h;
-}
-function sdPlace() {
-  const sdw = document.getElementById("sdsw"), work = document.getElementById("work"); if (!sdw || !work) return;
-  if (sdw.hidden) { work.style.removeProperty("--sdw"); work.style.removeProperty("--sdh"); return; }
-  const r = work.getBoundingClientRect(), cs = getComputedStyle(work);
-  const bl = parseFloat(cs.borderTopWidth) || 0, br = parseFloat(cs.borderRightWidth) || 0;
-  sdw.style.top = Math.round(r.top + bl + 4) + "px";
-  sdw.style.right = Math.round(window.innerWidth - r.right + br + 6 + (work.offsetWidth - work.clientWidth - br - (parseFloat(cs.borderLeftWidth) || 0))) + "px";
-  work.style.setProperty("--sdw", Math.ceil(sdw.offsetWidth) + "px");
-  work.style.setProperty("--sdh", Math.ceil(sdw.offsetHeight) + "px");
-}
-window.addEventListener("resize", () => { try { sdPlace(); } catch (e) {} });
-function sdMapSwitch() {
-  const opt = (k, label, on) => '<button type="button" class="sdopt' + (on ? " sel" : "") + '" data-cine="' + k + '" role="radio" aria-checked="' + (on ? "true" : "false") + '"><span class="ck">✓</span><span>' + label + "</span></button>";
-  return '<div class="sdsw2 msdsw"><div class="sdsw-t">How do you want to divide?</div><div class="sdsw-row" role="radiogroup" aria-label="Division mode">' + opt("sdlong", "Long Division", !SD.on) + opt("sdshort", "Short Division", SD.on) + '</div><div class="sdsw-n">Short Division works on Level 1 (one-digit divisors)</div></div>';
-}
-function sdSet(on) { SD.on = !!on; if (SD.on) SD.noteHidden = false; }
-function sdToggleInPlay() {
-  if (!sdAvail() || !G.P || G.overlay || locked() || G.P.phase === "complete" || G.P.phase === "over") return;
-  sdSet(!SD.on); SFX.step();
-  // Restart the same problem in the other mode (same numbers, fresh timer).
-  const pr = G.problems[G.probIdx]; if (pr) startProblem();
-}
-function sdTap(i) {
-  const P = G.P;
-  if (P.phase === "place" || P.phase === "sdq") {
-    const want = sdCy().pos;
-    if (i !== want) {
-      say(P.phase === "place" ? "Not there. Find the first number big enough to divide by " + P.d + "." : "Not that space. The next answer digit goes right after the last one.", "badmsg");
-      return penalty('[data-place="' + i + '"]');
-    }
-    P.placeHint = false; P.phase = "sdtype"; say(null); good("place"); render(); return;
-  }
-  if (P.phase === "sdleft") { say("You have a leftover. Tap between the numbers to tuck it in first.", "warnmsg"); SFX.nudge(); haptic(8); P.gapHint = true; render(); return; }
-}
-function sdGap(i) {
-  const P = G.P;
-  if (P.phase !== "sdleft") { say("No leftover to tuck in right now.", "warnmsg"); SFX.nudge(); render(); return; }
-  const want = sdCy().pos + 1;
-  if (i !== want) { say("Tuck the leftover in just before the next number.", "badmsg"); return penalty('[data-sdgap="' + i + '"]'); }
-  P.gapHint = false; P.phase = "sdlefttype"; say(null); good("place"); render();
-}
-function sdDigit(v) {
-  const P = G.P, cy = sdCy();
-  if (P.phase === "sdtype") {
-    if (v !== cy.q) { say(v > cy.q ? "Too big. Try a smaller digit." : "Too small. There's enough left for a bigger digit.", "badmsg"); return penalty(".cell.slot"); }
-    P.sq[P.sk] = v; fresh.add("glow:0," + cy.pos); good("tick"); say(null);
-    if (cy.pos >= P.n - 1) { if (P.A.remainder > 0) P.phase = "sdrem"; else { P.sk++; return complete(); } }
-    else if (cy.diff > 0) P.phase = "sdleft";
-    else { P.sk++; P.phase = "sdq"; }
-    render(); return;
-  }
-  if (P.phase === "sdlefttype") {
-    if (v !== cy.diff) { say("Not quite. What's left over?", "badmsg"); return penalty(".cell.slot"); }
-    P.sl[cy.pos + 1] = v; fresh.add("glow:L," + (cy.pos + 1)); P.sk++; P.phase = "sdq"; good("tick"); say(null); render(); return;
-  }
-  if (P.phase === "sdrem") {
-    if (v !== P.A.remainder) { say("Not quite. What's left over at the end?", "badmsg"); return penalty(".cell.slot"); }
-    P.remTyped = String(v); good("tick"); return complete();
-  }
-}
-const topVal = cy => parseInt(cy.topStr, 10);
-function rowsOf(k) { return { top: k === 0 ? 1 : 1 + 2 * k, prod: 2 + 2 * k, diff: 3 + 2 * k }; }
-
 function say(msg, cls) { G.P.msg = msg; G.P.msgCls = cls || ""; }
 
 function penalty(sel) {
@@ -1680,188 +1569,74 @@ function renderTimer() {
 setInterval(timerTick, 200);
 
 /* ================= actions ================= */
+const ordinalPlace = k => PLACES[k] || ("10^" + k);
 function act(type, arg) {
   const P = G.P;
   if (G.overlay) { if (type === "next") overlayNext(); return; }
   if (!P || locked() || P.phase === "complete" || P.phase === "over") return;
-  if (P.short) {
-    if (type === "place") return sdTap(arg);
-    if (type === "sdgap") return sdGap(arg);
-    if (type === "digit") return sdDigit(arg);
-    if (type === "divtap") { if (P.phase === "place") { P.placeHint = true; say("Tap the space above the line where the first answer digit goes. ↑", "warnmsg"); SFX.nudge(); render(); } return; }
-    return; // no step buttons in short division
-  }
   switch (type) {
-    case "place": return onPlace(arg);
-    case "divtap": if (P.phase === "place") { P.placeHint = true; say("Tap the space above the dividend — where the first quotient digit goes. ↑", "warnmsg"); SFX.nudge(); render(); } return;
+    case "pick": return onPick(arg);
     case "step": return onStep(arg);
     case "digit": return onDigit(arg);
-    case "top": return onTop(arg);
-    case "yes": return onCompare(true);
-    case "no": return onCompare(false);
-    case "cant": return onCant();
-    case "remainder": return onRemainder();
-    case "done": return onDone();
+    case "multap": if (P.phase === "pick") { say("Tap the digit of the bottom number you multiply by next: " + (P.k === 0 ? "start with the ones digit." : "now the " + ordinalPlace(P.k) + " digit."), "warnmsg"); SFX.nudge(); render(); } return;
   }
-}
-function onPlace(i) {
-  const P = G.P; if (P.phase !== "place") return;
-  if (i !== P.A.p) { say("Not there. Find the first number big enough to divide by " + P.d + ".", "badmsg"); return penalty('[data-place="' + i + '"]'); }
-  P.placeHint = false;
-  P.cycles.push({ pos: i, topStr: P.D.slice(0, i + 1), q: null, mul: null, prodPlaced: false, sub: null, diff: null, brought: false });
-  P.cur = 0; P.phase = "quotient"; say(null);
-  for (let c = 0; c <= i; c++) fresh.add("glow:1," + c);
-  good("place"); render();
 }
 const STEP_SEL = s => '.step[data-step="' + s + '"]';
+function onPick(j) {
+  const P = G.P; if (P.phase !== "pick") return;
+  if (j !== P.k) {
+    say(P.k === 0 ? "Not that one. Multiplying starts with the ones digit of the bottom number." : "Not that one. Next is the " + ordinalPlace(P.k) + " digit of the bottom number.", "badmsg");
+    return penalty('[data-pick="' + j + '"]');
+  }
+  P.phase = "needStep"; P.expect = P.k === 0 ? "multiply" : "zero"; say(null);
+  fresh.add("glow:b" + j); good("place"); render();
+}
 function onStep(s) {
   const P = G.P;
-  if (P.phase === "multiply") return; // buttons are disabled mid-multiply
-  if (P.phase === "place") { if (s === "divide") { say("Tap the space above the dividend where the quotient starts."); render(); return; } return penalty(STEP_SEL(s)); }
-  if ((P.phase === "quotient" && s === "divide") || (P.phase === "subtract" && s === "subtract") || (P.phase === "compare" && s === "compare")) return;
-  if (P.phase !== "needStep" || P.expect !== s) { say(null); return penalty(STEP_SEL(s)); }
-  const cy = curCy(); say(null);
-  flashOk(STEP_SEL(s));
-  if (s === "divide") { P.phase = "quotient"; good("step"); render(); return; }
-  if (s === "multiply") { cy.mul = { steps: mulSteps(cy.q, P.d), idx: 0, prod: {}, carries: {} }; P.phase = "multiply"; fresh.add("sidein"); good("step"); render(); return; }
-  if (s === "subtract") {
-    const T = cy.topStr.split("").map(Number).reverse(), prod = cy.q * P.d;
-    cy.sub = { work: T.slice(), B: String(prod).split("").map(Number).reverse(), marks: {}, struck: {}, col: 0, written: [], impossible: prod > topVal(cy), done: false };
-    P.phase = "subtract"; good("step"); render(); return;
+  if (P.phase === "mult" || P.phase === "sum") return; // buttons are disabled mid-typing
+  if (P.phase === "pick") { say("First tap the digit of the bottom number you are multiplying by.", "badmsg"); return penalty(STEP_SEL(s)); }
+  if (P.phase !== "needStep" || P.expect !== s) {
+    say(P.phase === "needStep" && P.expect ? "Not that step yet. Think about what comes next." : null, "badmsg");
+    return penalty(STEP_SEL(s));
   }
-  if (s === "compare") { P.phase = "compare"; good("step"); render(); return; }
-  if (s === "bring") {
-    const from = document.querySelector('[data-cell="1,' + (cy.pos + 1) + '"]');
-    const fromRect = from ? from.getBoundingClientRect() : null;
-    cy.brought = true;
-    const k = P.cur, r = rowsOf(k);
-    P.cycles.push({ pos: cy.pos + 1, topStr: String(cy.diff) + P.digs[cy.pos + 1], q: null, mul: null, prodPlaced: false, sub: null, diff: null, brought: false, topRow: r.diff });
-    P.cur++; P.phase = "needStep"; P.expect = "divide";
-    fresh.add("bring:" + k); SFX.drop(); streak++; haptic(12);
-    render();
-    const to = document.querySelector('[data-cell="' + r.diff + "," + (cy.pos + 1) + '"]');
-    fly(fromRect, to, String(P.digs[cy.pos + 1]), "ghost", 520, () => { if (to) { to.classList.remove("arrive"); to.classList.add("glow"); } });
-    lock(560);
+  say(null); flashOk(STEP_SEL(s));
+  if (s === "zero") {
+    for (let j = 0; j < P.k; j++) { P.prod[P.k][j] = 0; fresh.add("glow:p" + P.k + "," + j); }
+    P.zeros[P.k] = true; P.expect = "multiply"; good("step"); render(); return;
   }
+  if (s === "multiply") { P.phase = "mult"; P.idx = 0; good("step"); render(); return; }
+  if (s === "add") { P.phase = "sum"; P.sidx = 0; good("step"); render(); return; }
 }
 function flashOk(sel) { const el = document.querySelector(sel); if (el) { el.classList.remove("okflash"); void el.offsetWidth; el.classList.add("okflash"); setTimeout(() => el.classList.remove("okflash"), 480); } }
-
 function onDigit(v) {
-  const P = G.P, cy = curCy();
-  if (P.phase === "quotient") {
-    cy.q = v; cy.prevQ = null; P.phase = "needStep"; P.expect = "multiply"; say(null);
-    fresh.add("glow:0," + cy.pos); good("tick"); render(); return;
-  }
-  if (P.phase === "multiply") {
-    const m = cy.mul, st = m.steps[m.idx];
-    if (v !== st.val) { return penalty(".cell.slot"); }
-    if (st.kind === "carry") m.carries[st.j] = v; else m.prod[st.place] = v;
-    m.idx++; good("tick");
-    if (m.idx >= m.steps.length) return finishMultiply();
-    render(); return;
-  }
-  if (P.phase === "subtract") {
-    const s = cy.sub;
-    if (s.impossible) return penalty(".cell.slot");
-    const k = s.col, b = s.B[k] || 0;
-    if (s.work[k] < b && leadingOneBorrow(s, k)) {
-      // v13: the only digit to the left is a leading 1 — no borrow step, type the difference directly (10−8 → 2)
-      if (v !== s.work[k] + 10 - b) return penalty(".cell.slot");
-      s.work[k + 1] = 0; s.leadUsed = k + 1; s.written[k] = v; s.col++; P.nudgeK = null; say(null);
-      fresh.add("glow:" + rowsOf(P.cur).diff + "," + (cy.pos - k));
-      good("tick");
-      if (subFinished(s)) { s.done = true; cy.diff = topVal(cy) - cy.q * P.d; P.phase = "needStep"; P.expect = "compare"; }
-      render(); return;
-    }
-    if (s.work[k] < b) { // needs a borrow first: gentle, NON-penalty nudge (unique to borrowing)
-      P.nudgeK = borrowSource(s, k);
-      say("Borrow first — tap the digit to the left.", "warnmsg"); SFX.nudge(); haptic(8);
-      render(); return;
-    }
-    if (v !== s.work[k] - b) return penalty(".cell.slot");
-    s.written[k] = v; s.col++; P.nudgeK = null; say(null);
-    fresh.add("glow:" + rowsOf(P.cur).diff + "," + (cy.pos - k));
-    good("tick");
-    if (subFinished(s)) { s.done = true; cy.diff = topVal(cy) - cy.q * P.d; P.phase = "needStep"; P.expect = "compare"; }
-    render(); return;
-  }
-  if (P.phase === "remEntry") {
-    const rs = String(curCy().diff);
-    if (String(v) !== rs[P.remTyped.length]) return penalty(".cell.slot");
-    P.remTyped += v; good("tick");
-    if (P.remTyped.length === rs.length) return complete();
-    render(); return;
-  }
-}
-function leadingOneBorrow(s, k) { return k + 1 === s.work.length - 1 && s.work[k + 1] === 1 && !s.struck[k + 1]; }
-function borrowSource(s, k) { let j = k + 1; while (j < s.work.length - 1 && s.work[j] === 0) j++; return j; }
-function subFinished(s) {
-  if (s.col >= s.work.length) return true;
-  let rem = 0;
-  for (let i = s.work.length - 1; i >= s.col; i--) rem = rem * 10 + s.work[i] - (s.B[i] || 0);
-  return rem === 0;
-}
-function onTop(kk) {
-  const P = G.P; if (P.phase !== "subtract") return;
-  const cy = curCy(), s = cy.sub, k = s.col, sel = '[data-top="' + kk + '"]';
-  if (s.impossible || s.done || !(s.work[k] < (s.B[k] || 0))) return penalty(sel);
-  const j = borrowSource(s, k);
-  if (kk !== k + 1 && kk !== j) return penalty(sel);
-  s.work[j] -= 1; s.struck[j] = true; s.marks[j] = s.work[j]; fresh.add("b:" + j);
-  for (let i = j - 1; i > k; i--) { s.work[i] = 9; s.struck[i] = true; s.marks[i] = 9; fresh.add("b:" + i); }
-  s.work[k] += 10; s.struck[k] = true; s.marks[k] = s.work[k]; fresh.add("b:" + k);
-  P.nudgeK = null; say(null); SFX.borrow(); streak++; haptic(15);
-  render();
-}
-function finishMultiply() {
-  const P = G.P, cy = curCy(), k = P.cur;
-  render(); // show the final typed digit in the side problem before it flies
-  const rects = {};
-  $$("[data-sp]").forEach(el => { rects[el.getAttribute("data-sp")] = el.getBoundingClientRect(); });
-  // render the last typed digit first so it is visible in the side problem, then fly
-  cy.prodPlaced = true; P.phase = "needStep"; P.expect = "subtract"; P.sideFading = k;
-  fresh.add("arrive:" + k);
-  render();
-  SFX.whoosh();
-  const ps = String(cy.q * P.d);
-  for (let pl = 0; pl < ps.length; pl++) {
-    const to = document.querySelector('[data-mp="' + pl + '"]');
-    const r = rects[pl] || rects[String(pl)];
-    setTimeout(() => fly(r, to, ps[ps.length - 1 - pl], "", 480, () => { if (to) to.classList.remove("arrive"); }), 160 * ANIM);
-  }
-  lock(720);
-  setTimeout(() => { if (G.P === P && P.sideFading === k) { P.sideFading = null; render(); } }, 760 * ANIM);
-}
-function retry(dir) {
-  const P = G.P, cy = curCy();
-  cy.prevQ = cy.q; cy.q = null; cy.mul = null; cy.prodPlaced = false; cy.sub = null; cy.diff = null; P.nudgeK = null;
-  P.phase = "quotient"; P.sideFading = null;
-  say(dir === "bigger" ? "What's left is still big enough to divide — try a bigger quotient digit." : "That product is too big to subtract — try a smaller quotient digit.", "warnmsg");
-  SFX.retry(); haptic(10); render();
-}
-function onCant() {
-  const P = G.P; if (P.phase !== "subtract") return penalty("#btn-cant");
-  const s = curCy().sub;
-  if (s.impossible) return retry("smaller");
-  return penalty("#btn-cant");
-}
-function onCompare(yes) {
-  const P = G.P; if (P.phase !== "compare") return;
-  const cy = curCy(), smaller = cy.diff < P.d;
-  if (yes && smaller) { P.phase = "needStep"; P.expect = cy.pos < P.n - 1 ? "bring" : "final"; good("good"); render(); return; }
-  if (!yes && !smaller) return retry("bigger");
-  return penalty(yes ? "#cmp-yes" : "#cmp-no");
-}
-function onRemainder() {
   const P = G.P;
-  if (P.phase === "remEntry") return;
-  if (P.phase === "needStep" && P.expect === "final" && curCy().diff > 0) { P.phase = "remEntry"; P.remTyped = ""; good("step"); render(); return; }
-  return penalty("#btn-rem");
-}
-function onDone() {
-  const P = G.P;
-  if (P.phase === "needStep" && P.expect === "final" && curCy().diff === 0) return complete();
-  return penalty("#btn-done");
+  if (P.phase === "mult") {
+    const row = P.an.rows[P.k], st = row.steps[P.idx];
+    if (v !== st.val) {
+      say(st.kind === "write" ? "Not quite. " + (st.cin ? "Multiply, then add the carry." : "Check your times table.") : "Not quite. That's the carry.", "badmsg");
+      return penalty(".cell.slot");
+    }
+    say(null);
+    if (st.kind === "carry") { P.carries[P.k][st.i] = v; fresh.add("glow:c" + st.i); }
+    else { P.prod[P.k][st.col] = v; fresh.add("glow:p" + P.k + "," + st.col); }
+    P.idx++; good("tick");
+    if (P.idx >= row.steps.length) {
+      // this row is done: clear the carries, then the next bottom digit (or the addition)
+      P.carries[P.k] = {};
+      if (P.k + 1 < P.m) { P.k++; P.phase = "pick"; P.expect = null; }
+      else { P.phase = "needStep"; P.expect = "add"; }
+    }
+    render(); return;
+  }
+  if (P.phase === "sum") {
+    const st = P.an.sum[P.sidx];
+    if (v !== st.val) { say(st.kind === "sum" ? "Not quite. " + (st.cin ? "Add the column, then the carry." : "Add up the column.") : "Not quite. That's the carry.", "badmsg"); return penalty(".cell.slot"); }
+    say(null);
+    if (st.kind === "scarry") { P.scar[st.col] = v; fresh.add("glow:s" + st.col); } else { P.final[st.col] = v; fresh.add("glow:f" + st.col); }
+    P.sidx++; good("tick");
+    if (P.sidx >= P.an.sum.length) return complete();
+    render(); return;
+  }
 }
 function complete() {
   const P = G.P; P.phase = "complete";
@@ -1877,6 +1652,7 @@ function complete() {
     G.overlay = { type: "solved", stars }; render();
   }, 900 * ANIM);
 }
+
 function overlayNext() {
   const o = G.overlay; if (!o) return;
   if (o.type === "cine") return;
@@ -1964,341 +1740,98 @@ function toast(msg) {
 function isPhoneLand() { return !!(window.matchMedia && matchMedia("(orientation: landscape) and (max-height: 520px)").matches); }
 function layout() {
   const P = G.P, work = $("#work");
-  const cb = document.getElementById("cmpbar"), cbH = cb && !cb.hidden ? cb.offsetHeight + 8 : 0; // fit as if the compare bar were not there, so the paper does not jump
-  const prH = sdNaturalPromptH();
+  const prH = (document.getElementById("prompt") || {}).offsetHeight || 28;
   const phoneLand = isPhoneLand();
   const tight = !phoneLand && (work.clientWidth < 600 || work.clientHeight < 420);
-  const W = work.clientWidth - (phoneLand ? 8 : tight ? 10 : 18), H = Math.max(80, work.clientHeight - prH + cbH); // leave room for the prompt; don't let a 28px floor clip the top
-  const dl = P.ds.length, n = P.n;
-  const sideCols = Math.max(dl, String(9 * P.d).length) + 1.8;
-  const remCols = dl + 1.6; // "R" + up to dl digits (only shown after the side problem is gone)
-  const totalCols = 1.0 + dl + 1.1 + n + 0.8 + Math.max(sideCols, remCols) + 0.4;
-  const rowsFull = 2 + 2 * P.A.cycles.length + 1.2;
+  const W = work.clientWidth - (phoneLand ? 8 : tight ? 10 : 18), H = Math.max(80, work.clientHeight - prH);
+  const C = P.n + P.m, m = P.m;
+  const totalCols = C + 1.5;
+  const rowsFull = 0.62 + 2 + 0.3 + 0.62 + m + 0.35 + 1 + 0.4;
   const rowH = phoneLand ? 1.08 : 1.16;
-  const slack = phoneLand ? 0.55 : (tight ? 0.9 : 1.7);
+  const slack = phoneLand ? 0.15 : (tight ? 0.2 : 0.35);
   let cw = Math.floor(Math.min(W / totalCols, H / ((rowsFull + slack) * rowH)));
-  cw = Math.max(phoneLand ? 22 : tight ? 13 : 18, Math.min(84, cw));
+  cw = Math.max(phoneLand ? 22 : tight ? 15 : 20, Math.min(84, cw));
   const rh = Math.round(cw * rowH);
   const contentW = totalCols * cw;
-  const left = Math.max(cw * 1.0, (W - contentW) / 2 + cw * 1.0);
-  const X0 = left + (dl + 1.1) * cw;
-  const TOP = (tight || phoneLand) ? Math.max(4, Math.round(rh * 0.12)) : rh;
-  const SX = X0 + (n + 0.8) * cw;
-  return { prNat: prH, cw, rh, X0, TOP, SX, sideCols, W, H: work.clientHeight, rowsFull, mx: Math.max(6, left - cw * 0.55), contentW: SX + Math.max(sideCols, remCols) * cw + 0.4 * cw };
+  const left = Math.max(cw * 0.6, (W - contentW) / 2 + cw * 0.6);
+  const XR = left + C * cw; /* right edge of the ones column */
+  const TOP = (tight || phoneLand) ? Math.max(4, Math.round(rh * 0.12)) : Math.round(rh * 0.5);
+  return { cw, rh, XR, TOP, C, W, H: work.clientHeight, rowsFull, contentW: XR + cw * 0.7, mx: Math.max(6, left - cw * 0.55), prH };
 }
 function esc(s) { return String(s); }
-/* Short division board: big cells, no work rows, no side multiply. */
-function sdNoteHtml() {
-  if (SD.noteHidden) return "";
-  return '<div class="sdnote" role="note"><div><b>Short division:</b> With a one-digit divisor, short division can be a quicker way to solve it. Tap a space above the line and type the digit. Got a leftover? Tap between the numbers to tuck it in small. No step buttons — do it in your head!</div><button type="button" class="sdx" id="sd-hide">Got it</button></div>';
-}
-function renderShort() {
-  const P = G.P, board = $("#board"), work = $("#work"), pr = $("#prompt");
-  pr.className = P.msgCls || "";
-  document.body.classList.toggle("sdnote-on", !SD.noteHidden);
-  pr.innerHTML = sdNoteHtml() + '<div class="sdmsg">' + String(P.msg || defaultPrompt()).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]) + "</div>";
-  const pinEl = $("#pin"); if (pinEl) { pinEl.hidden = true; pinEl.innerHTML = ""; }
-  const prH = pr.offsetHeight || 28;
-  const phoneLand = isPhoneLand();
-  const W = work.clientWidth - (phoneLand ? 8 : 12), Hh = Math.max(80, work.clientHeight - prH);
-  const n = P.n, PITCH = 1.38, rowH = 1.22;
-  const showR = P.A.remainder > 0;
-  const colsCore = 0.35 + 1 + 0.95 + n * PITCH + 0.35;
-  const colsR = colsCore + 1.9;
-  const topM = phoneLand ? 0.35 : 0.55;
-  const cwSide = Math.min(W / colsR, Hh / ((topM + 2.5) * rowH));
-  const cwBelow = Math.min(W / colsCore, Hh / ((topM + 3.6) * rowH));
-  const remBelow = cwBelow > cwSide * 1.12;
-  const totalCols = remBelow ? colsCore : colsR;
-  let cw = Math.floor(remBelow ? cwBelow : cwSide);
-  cw = Math.max(22, Math.min(130, cw));
-  const rh = Math.round(cw * rowH);
-  const contentW = totalCols * cw;
-  const left = Math.max(cw * 0.35, (W - contentW) / 2 + cw * 0.35);
-  const X0 = left + 1.95 * cw;
-  const gapW = (PITCH - 1) * cw;
-  const X = i => X0 + gapW + i * PITCH * cw; // left edge of dividend column i
-  const usedH = (topM + (remBelow ? 3.4 : 2.3)) * rh;
-  const TOP = Math.round(topM * rh + Math.max(0, (Hh - usedH) * (phoneLand ? 0.3 : 0.3)));
-  const Y = r => TOP + r * rh;
-  let html = "";
-  const cell = (x, y, txt, cls, attrs, style) => { html += '<div class="cell ' + cls + '" style="left:' + x.toFixed(1) + "px;top:" + y.toFixed(1) + "px;" + (style || "") + '"' + (attrs ? " " + attrs : "") + ">" + txt + "</div>"; };
-  // divisor
-  P.ds.forEach((dg, i) => cell(X0 - (P.ds.length + 0.75 - i) * cw, Y(1), dg, "hand divisor stone"));
-  // bracket
-  const bx = X0 - 0.3 * cw, y0 = Y(1) + 2, y1 = Y(2) - 2, xEnd = X(n - 1) + cw + 0.2 * cw;
-  {
-    const curve = "M" + bx + "," + y0 + " Q" + (bx + 0.32 * cw) + "," + ((y0 + y1) / 2) + " " + (bx - 0.05 * cw) + "," + y1, top = "M" + bx + "," + y0 + " L" + xEnd + "," + y0;
-    const leaf = (x, y, r, sz) => '<path class="vleaf" transform="translate(' + x.toFixed(1) + "," + y.toFixed(1) + ") rotate(" + r + ')" d="M0,0 C' + (sz * 0.35) + "," + (-sz * 0.45) + " " + (sz * 0.9) + "," + (-sz * 0.35) + " " + (sz * 1.15) + ",0 C" + (sz * 0.9) + "," + (sz * 0.35) + " " + (sz * 0.35) + "," + (sz * 0.45) + ' 0,0Z"/>';
-    let leaves = "";
-    for (let i = 1; i <= n; i++) leaves += leaf(X(i) - gapW * 0.5, y0, i % 2 ? -38 : 32, cw * 0.28);
-    leaves += leaf(bx + 0.18 * cw, (y0 + y1) / 2, 150, cw * 0.32) + leaf(bx + 0.1 * cw, y0 + (y1 - y0) * 0.8, 200, cw * 0.26);
-    const curl = '<path class="vcurl" d="M' + xEnd + "," + y0 + " c" + (0.25 * cw) + "," + (-0.05 * cw) + " " + (0.35 * cw) + "," + (-0.4 * cw) + " " + (0.12 * cw) + "," + (-0.42 * cw) + " c" + (-0.16 * cw) + "," + (-0.02 * cw) + " " + (-0.2 * cw) + "," + (0.2 * cw) + " " + (-0.04 * cw) + "," + (0.22 * cw) + '"/>';
-    html += '<svg class="bracket" width="' + (xEnd + cw) + '" height="' + (y1 + 10) + '"><path class="vl" d="' + curve + '"/><path class="vl" d="' + top + '"/><path class="vtex" d="' + curve + '"/><path class="vtex" d="' + top + '"/>' + curl + leaves + "</svg>";
-  }
-  const cy = P.sk < P.A.cycles.length ? sdCy() : null;
-  // dividend (the part being divided right now is softly highlighted)
-  P.digs.forEach((dg, i) => {
-    let cls = "hand stone", attrs = 'data-cell="1,' + i + '"';
-    if (P.phase === "place") { cls += " tap"; attrs += ' data-divtap="' + i + '"'; }
-    if (cy && P.phase !== "place" && P.phase !== "complete" && i === cy.pos && P.phase !== "sdleft") cls += " cur";
-    cell(X(i), Y(1), '<span class="dg">' + dg + "</span>", cls, attrs);
-  });
-  // tucked leftovers: half-height, raised, just before the next digit
-  const lw = Math.max(gapW + 0.32 * cw, 0.62 * cw), lh = Math.round(rh * 0.5), lfs = Math.round(rh * 0.42);
-  const gapX = i => X(i) - gapW / 2 - lw / 2;
-  Object.keys(P.sl).forEach(k => { k = +k; cell(gapX(k), Y(1) + rh * 0.08, P.sl[k], "hand sdleft" + (fresh.has("glow:L," + k) ? " glow" : ""), "", "width:" + lw + "px;height:" + lh + "px;font-size:" + lfs + "px"); });
-  if (P.phase === "sdleft") {
-    for (let i = Math.max(1, P.A.p + 1); i < n; i++) if (P.sl[i] === undefined) cell(gapX(i), Y(1) + rh * 0.02, "", "sdgap" + (P.gapHint ? " hinting" : ""), 'data-sdgap="' + i + '" aria-label="Tuck the leftover before this digit"', "width:" + lw + "px;height:" + lh + "px");
-  }
-  if (P.phase === "sdlefttype" && cy) cell(gapX(cy.pos + 1), Y(1) + rh * 0.08, "", "sdleft slot", "", "width:" + lw + "px;height:" + lh + "px");
-  // quotient row
-  P.A.cycles.forEach((c, k) => { if (P.sq[k] !== undefined) cell(X(c.pos), Y(0), '<span class="dg">' + P.sq[k] + "</span>", "hand quo" + (fresh.has("glow:0," + c.pos) ? " glow" : "")); });
-  if (P.phase === "place" || P.phase === "sdq" || P.phase === "sdleft") {
-    const filled = new Set(P.A.cycles.filter((c, k) => P.sq[k] !== undefined).map(c => c.pos));
-    for (let i = 0; i < n; i++) if (!filled.has(i)) cell(X(i), Y(0), "", "tap qtarget sdq" + (P.placeHint ? " hinting" : ""), 'data-place="' + i + '"');
-  }
-  if (P.phase === "sdtype" && cy) cell(X(cy.pos), Y(0), "", "slot");
-  // remainder
-  if (showR && (P.phase === "sdrem" || P.phase === "complete")) {
-    const rx = remBelow ? X(n - 1) - 0.9 * cw : xEnd + 0.25 * cw, ry = remBelow ? Y(2.25) : Y(0);
-    cell(rx, ry, "R", "hand rlabel sdrl");
-    if (P.remTyped) cell(rx + 0.85 * cw, ry, '<span class="dg">' + P.remTyped + "</span>", "hand quo");
-    else cell(rx + 0.85 * cw, ry, "", "slot");
-  }
-  const bw = Math.max(W, contentW + left), bh = Math.max(Hh, Y(remBelow ? 3.5 : 2.4));
-  board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--mx:" + Math.max(6, left - cw * 0.3) + "px;width:" + bw + "px;height:" + bh + "px";
-  board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + prH) + "px;top:-" + prH + 'px"></div>' + html;
-  board.style.top = prH + "px"; board.style.position = "absolute";
-  fresh.clear();
-}
-
-
+const placeName = k => ordinalPlace(k);
 function render() {
-  document.body.classList.toggle("ep-jungle", G.episode === 0);
+  document.body.classList.toggle("ep-jungle", G.episode === 0 || G.episode === 2);
   document.body.classList.toggle("ep-savanna", G.episode === 1);
-  document.body.classList.toggle("ep-snow", G.episode === 2);
+  document.body.classList.remove("ep-snow");
   renderHeader(); renderInput(); renderOverlay();
   const P = G.P, board = $("#board");
-  if (!P) { board.innerHTML = ""; $("#prompt").textContent = ""; const pin = $("#pin"); if (pin) { pin.hidden = true; pin.innerHTML = ""; } fresh.clear(); return; }
-  if (P.short) { renderShort(); return; }
-  document.body.classList.remove("sdnote-on");
-  { const pr0 = $("#prompt"); if (pr0) { pr0.className = P.msgCls || ""; pr0.textContent = P.msg || defaultPrompt(); } } // set the prompt first so the problem is laid out below it
-  const L = layout(), { cw, rh, X0, TOP } = L;
-  const X = c => X0 + c * cw, Y = r => TOP + r * rh;
-  const cells = new Map();
-  const put = (r, c, txt, cls, attrs) => { const key = r + "," + c; const o = cells.get(key) || { r, c, txt: "", cls: [], attrs: "", mark: null }; if (txt !== undefined && txt !== null) o.txt = txt; if (cls) o.cls.push(...cls.split(" ").filter(Boolean)); if (attrs) o.attrs += " " + attrs; cells.set(key, o); return o; };
-  let extra = "";
-
-  // divisor
-  P.ds.forEach((dg, i) => { extra += '<div class="cell hand divisor stone' + (P.phase === "compare" ? " cmpdiv" : "") + '" style="left:' + (X0 - (P.ds.length + 0.75 - i) * cw) + "px;top:" + Y(1) + 'px">' + dg + "</div>"; });
-  // bracket
-  const bx = X0 - 0.3 * cw, y0 = Y(1) + 2, y1 = Y(2) - 2, xEnd = X(P.n) + 0.15 * cw;
-  {
-    const curve = "M" + bx + "," + y0 + " Q" + (bx + 0.32 * cw) + "," + ((y0 + y1) / 2) + " " + (bx - 0.05 * cw) + "," + y1, top = "M" + bx + "," + y0 + " L" + xEnd + "," + y0;
-    let leaves = "";
-    const leaf = (x, y, r, sz) => '<path class="vleaf" transform="translate(' + x.toFixed(1) + "," + y.toFixed(1) + ") rotate(" + r + ')" d="M0,0 C' + (sz * 0.35) + "," + (-sz * 0.45) + " " + (sz * 0.9) + "," + (-sz * 0.35) + " " + (sz * 1.15) + ",0 C" + (sz * 0.9) + "," + (sz * 0.35) + " " + (sz * 0.35) + "," + (sz * 0.45) + ' 0,0Z"/>';
-    for (let i = 1; i <= P.n; i++) { const x = X(i) - 0.02 * cw; leaves += leaf(x, y0, i % 2 ? -38 : 32, cw * 0.3); }
-    leaves += leaf(bx + 0.18 * cw, (y0 + y1) / 2, 150, cw * 0.32) + leaf(bx + 0.1 * cw, y0 + (y1 - y0) * 0.8, 200, cw * 0.26);
-    const curl = '<path class="vcurl" d="M' + xEnd + "," + y0 + " c" + (0.25 * cw) + "," + (-0.05 * cw) + " " + (0.35 * cw) + "," + (-0.4 * cw) + " " + (0.12 * cw) + "," + (-0.42 * cw) + " c" + (-0.16 * cw) + "," + (-0.02 * cw) + " " + (-0.2 * cw) + "," + (0.2 * cw) + " " + (-0.04 * cw) + "," + (0.22 * cw) + '"/>';
-    extra += '<svg class="bracket" width="' + (xEnd + cw) + '" height="' + (y1 + 10) + '"><path class="vl" d="' + curve + '"/><path class="vl" d="' + top + '"/><path class="vtex" d="' + curve + '"/><path class="vtex" d="' + top + '"/>' + curl + leaves + "</svg>";
-  }
-  // dividend
-  P.digs.forEach((dg, i) => {
-    let cls = "hand stone", attrs = 'data-cell="1,' + i + '"';
-    if (P.phase === "place") { cls += " tap"; attrs += ' data-divtap="' + i + '"'; }
-    put(1, i, '<span class="dg">' + dg + "</span>", cls, attrs);
+  const pinEl = $("#pin"); if (pinEl) { pinEl.hidden = true; pinEl.innerHTML = ""; }
+  if (!P) { board.innerHTML = ""; $("#prompt").textContent = ""; fresh.clear(); return; }
+  { const pr0 = $("#prompt"); if (pr0) { pr0.className = P.msgCls || ""; pr0.textContent = P.msg || defaultPrompt(); } }
+  const L = layout(), { cw, rh, XR, TOP, C } = L, n = P.n, m = P.m, an = P.an;
+  const X = c => XR - (c + 1) * cw; /* left edge of column c (0 = ones) */
+  const yCarry = TOP, yA = TOP + 0.62 * rh, yB = yA + rh, yL1 = yB + rh + 2, ySC = yL1 + 4, yP0 = ySC + 0.62 * rh;
+  const yP = k => yP0 + k * rh, yL2 = yP(m - 1) + rh + 2, yF = yL2 + 6;
+  const glow = id => fresh.has("glow:" + id) ? " glow" : "";
+  let html = "";
+  const cell = (x, y, txt, cls, attrs) => '<div class="cell ' + cls + '" style="left:' + x + "px;top:" + y + 'px"' + (attrs || "") + ">" + txt + "</div>";
+  const stepNow = P.phase === "mult" ? an.rows[P.k].steps[P.idx] : null;
+  const sumNow = P.phase === "sum" ? an.sum[P.sidx] : null;
+  // top number
+  an.Ad.forEach((d, i) => { const foc = stepNow && stepNow.kind === "write" && stepNow.i === i; html += cell(X(i), yA, '<span class="dg">' + d + "</span>", "hand stone" + (foc ? " focus" : ""), ""); });
+  // bottom number (tap targets while picking)
+  an.Bd.forEach((d, j) => {
+    const picking = P.phase === "pick", cur = (P.phase === "mult" || (P.phase === "needStep" && P.expect !== "add")) && j === P.k;
+    html += cell(X(j), yB, '<span class="dg">' + d + "</span>", "hand stone" + (picking ? " tap" : "") + (cur ? " cur" : "") + glow("b" + j), picking ? ' data-pick="' + j + '"' : "");
   });
-  // quotient spaces are the tap targets while choosing where the quotient starts
-  if (P.phase === "place") P.digs.forEach((dg, i) => put(0, i, "", "tap qtarget" + (P.placeHint ? " hinting" : ""), 'data-place="' + i + '"'));
-  // quotient
-  P.cycles.forEach(cy => { if (cy.q !== null) put(0, cy.pos, '<span class="dg">' + cy.q + "</span>", "hand quo"); });
-  // cycles
-  P.cycles.forEach((cy, k) => {
-    const r = rowsOf(k);
-    if (cy.prodPlaced) {
-      const ps = String(cy.q * P.d);
-      for (let pl = 0; pl < ps.length; pl++) {
-        const attrs = k === P.cur ? 'data-mp="' + pl + '"' : "";
-        put(r.prod, cy.pos - pl, '<span class="dg">' + ps[ps.length - 1 - pl] + "</span>", "hand prod" + (fresh.has("arrive:" + k) ? " arrive" : ""), attrs);
-      }
-      // Minus + subtraction bar only after Subtract is tapped (cy.sub), not when the product lands.
-      if (cy.sub) {
-        const leftCol = Math.min(cy.pos - ps.length + 1, cy.pos - cy.topStr.length + 1);
-        extra += '<div class="sign hand" style="left:' + (X(cy.pos - ps.length + 1) - 0.72 * cw) + "px;top:" + Y(r.prod) + 'px">−</div>';
-        extra += '<div class="rule-line" style="left:' + (X(leftCol) - 0.1 * cw) + "px;width:" + ((cy.pos - leftCol + 1.2) * cw) + "px;top:" + (Y(r.diff) - 1) + 'px"></div>';
-      }
-    }
-    if (cy.sub) {
-      cy.sub.written.forEach((v, kk) => { if (v !== undefined) put(r.diff, cy.pos - kk, '<span class="dg">' + v + "</span>", "hand diff"); });
-      Object.keys(cy.sub.struck).forEach(kk => {
-        kk = +kk; const o = put(r.top, cy.pos - kk, null, "struck" + (k === P.cur && fresh.has("b:" + kk) ? " fresh" : ""));
-        o.mark = '<span class="mark' + (k === P.cur && fresh.has("b:" + kk) ? " fresh" : "") + '">' + cy.sub.marks[kk] + "</span>";
-      });
-    }
-    if (cy.brought) put(r.diff, cy.pos + 1, '<span class="dg">' + P.digs[cy.pos + 1] + "</span>", "hand brought" + (fresh.has("bring:" + k) ? " arrive" : ""), 'data-cell="' + r.diff + "," + (cy.pos + 1) + '"');
-  });
-  // current number highlight + tap targets
-  const cy = curCy();
-  if (cy) {
-    const r = rowsOf(P.cur), len = cy.topStr.length;
-    for (let kk = 0; kk < len; kk++) {
-      const c = cy.pos - kk;
-      const o = put(r.top, c, cells.has(r.top + "," + c) ? null : '<span class="dg">' + cy.topStr[len - 1 - kk] + "</span>", P.phase === "complete" ? "" : "cur");
-      if (P.phase === "subtract") { o.cls.push("tap"); o.attrs += ' data-top="' + kk + '"'; }
-      if (P.nudgeK === kk && P.phase === "subtract") o.cls.push("nudge");
-    }
-    if (P.phase === "quotient") {
-      if (cy.prevQ !== null && cy.prevQ !== undefined) put(0, cy.pos, '<span class="dg">' + cy.prevQ + "</span>", "hand quo selq");
-      else put(0, cy.pos, "", "slot");
-    }
-    if (P.phase === "subtract" && !cy.sub.done) put(r.diff, cy.pos - cy.sub.col, null, "slot");
+  html += '<div class="sign hand" style="left:' + (X(Math.max(n, m)) + 0.05 * cw) + "px;top:" + yB + 'px">×</div>';
+  html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL1 - 1) + 'px"></div>';
+  // multiplication carries (current row only)
+  const cr = P.carries[Math.min(P.k, m - 1)] || {};
+  Object.keys(cr).forEach(i => { html += cell(X(+i), yCarry, cr[i], "hand carryc" + glow("c" + i), ""); });
+  if (stepNow && stepNow.kind === "carry") html += cell(X(stepNow.i), yCarry, "", "hand carryc slot", "");
+  // partial products
+  for (let k = 0; k < m; k++) {
+    Object.keys(P.prod[k]).forEach(c => { c = +c; const z = c < k; html += cell(X(c), yP(k), '<span class="dg">' + P.prod[k][c] + "</span>", "hand prod" + (z ? " zero" : "") + glow("p" + k + "," + c), ""); });
   }
-  // remainder
-  if ((P.phase === "remEntry" || P.phase === "complete") && cy && cy.diff > 0) {
-    extra += '<div class="cell hand rlabel" style="left:' + (X(P.n) + 0.2 * cw) + "px;top:" + Y(0) + 'px">R</div>';
-    for (let i = 0; i < P.remTyped.length; i++) put(0, P.n + 1 + i, '<span class="dg">' + P.remTyped[i] + "</span>", "hand quo");
-    if (P.phase === "remEntry") put(0, P.n + 1 + P.remTyped.length, "", "slot");
+  if (stepNow && stepNow.kind !== "carry") html += cell(X(stepNow.col), yP(P.k), "", "slot", "");
+  if (m > 0) html += '<div class="sign hand" style="left:' + (X(C - 0) + 0.05 * cw) + "px;top:" + yP(m - 1) + 'px">+</div>';
+  // sum carries and answer row
+  Object.keys(P.scar).forEach(c => { html += cell(X(+c), ySC, P.scar[c], "hand carryc" + glow("s" + c), ""); });
+  if (sumNow && sumNow.kind === "scarry") html += cell(X(sumNow.col), ySC, "", "hand carryc slot", "");
+  html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL2 - 1) + 'px"></div>';
+  Object.keys(P.final).forEach(c => { html += cell(X(+c), yF, '<span class="dg">' + P.final[c] + "</span>", "hand quo" + glow("f" + c), ""); });
+  if (sumNow && sumNow.kind === "sum") {
+    html += cell(X(sumNow.col), yF, "", "slot", "");
+    // highlight the column being added
+    for (let k = 0; k < m; k++) if (P.prod[k][sumNow.col] !== undefined) html += cell(X(sumNow.col), yP(k), "", "colhi", "");
   }
-  for (const f of fresh) if (f.startsWith("glow:")) { const [r, c] = f.slice(5).split(",").map(Number); const o = cells.get(r + "," + c); if (o) o.cls.push("glow"); }
-
-  // compare: the Yes/No prompt lives in the input area (#cmpbar); here we only highlight what is being compared
-  if (P.phase === "compare" && cy && cy.sub) {
-    const r = rowsOf(P.cur);
-    cy.sub.written.forEach((v, kk) => { const o = cells.get(r.diff + "," + (cy.pos - kk)); if (o && v !== undefined) o.cls.push("cmpnum"); });
-  }
-  let html = (G.episode === 2 ? '<div class="qfrost" aria-hidden="true"></div>' : "");
-  for (const o of cells.values()) {
-    html += '<div class="cell ' + o.cls.join(" ") + '" style="left:' + (X(o.c) + (o.c >= P.n && o.r === 0 && o.cls.includes("quo") ? 0.1 * cw : 0)) + "px;top:" + Y(o.r) + 'px"' + o.attrs + ">" + o.txt + (o.mark || "") + "</div>";
-  }
-  // side multiply problem
-  let sideBottom = 0;
-  if (cy && cy.mul && (P.phase === "multiply" || P.sideFading === P.cur)) {
-    const m = cy.mul, dl = P.ds.length, SR = L.SX + L.sideCols * cw - 0.3 * cw;
-    const yTop = Y(rowsOf(P.cur).top);
-    const carryY = yTop + 0.1 * rh, divY = carryY + 0.6 * rh, mulY = divY + rh, prodY = mulY + rh + 4;
-    const st = P.phase === "multiply" ? m.steps[m.idx] : null;
-    let s = '<div class="side' + (P.sideFading === P.cur && P.phase !== "multiply" ? " fading" : "") + (fresh.has("sidein") ? " side-in" : "") + '" style="left:' + L.SX + "px;top:" + yTop + "px;width:" + (L.sideCols * cw) + "px;height:" + (prodY + rh + 0.25 * rh - yTop) + 'px"></div>';
-    P.ds.forEach((dg, i) => {
-      const j = dl - 1 - i; const foc = st && st.kind === "write" && st.j === j && cy.q !== 0;
-      s += '<div class="cell hand' + (foc ? " focus" : "") + '" style="left:' + (SR - (j + 1) * cw) + "px;top:" + divY + 'px">' + dg + "</div>";
-      const cv = m.carries[j];
-      const carrySlot = st && st.kind === "carry" && st.j === j;
-      if (cv !== undefined || carrySlot) {
-        const foc2 = st && st.kind === "write" && st.j === j && st.c > 0;
-        s += '<div class="cell hand carryc' + (carrySlot ? " slot" : "") + (foc2 ? " focus" : "") + '" style="left:' + (SR - (j + 1) * cw) + "px;top:" + carryY + 'px">' + (cv !== undefined ? cv : "") + "</div>";
-      }
-    });
-    const qFoc = st && (st.kind === "write");
-    s += '<div class="sign hand" style="left:' + (SR - (Math.max(dl, 2) + 0.9) * cw) + "px;top:" + mulY + 'px">×</div>';
-    s += '<div class="cell hand sidefac' + (qFoc ? " focus" : "") + '" style="left:' + (SR - cw) + "px;top:" + mulY + 'px">' + cy.q + "</div>";
-    const pw = Math.max(dl, String(9 * P.d).length) + 0.9;
-    s += '<div class="rule-line" style="left:' + (SR - pw * cw) + "px;width:" + (pw * cw) + "px;top:" + (mulY + rh) + 'px"></div>';
-    const places = Object.keys(m.prod).map(Number);
-    places.forEach(pl => { s += '<div class="cell hand sp-filled" data-sp="' + pl + '" style="left:' + (SR - (pl + 1) * cw) + "px;top:" + prodY + 'px">' + m.prod[pl] + "</div>"; });
-    if (st && st.kind !== "carry") s += '<div class="cell slot" style="left:' + (SR - (st.place + 1) * cw) + "px;top:" + prodY + 'px"></div>';
-    html += s; sideBottom = prodY + rh * 1.4;
-  }
-  html += extra;
-  const prH0 = ($("#prompt") && $("#prompt").offsetHeight) || 28;
-  const sdExtra = Math.max(0, prH0 - (L.prNat || prH0)); /* Switch padding comes out of slack below the problem, never by making the board taller than the paper (that turned on the sticky cream pin band). */
-  const bw = Math.max(L.W, L.contentW), bh = Math.max(L.H - prH0, Y(L.rowsFull + 0.7) - sdExtra, sideBottom, P.phase === "compare" ? Y(rowsOf(P.cur).diff + 3) : 0);
+  const bw = Math.max(L.W, L.contentW), bh = Math.max(L.H - L.prH, yF + rh * 1.4);
   board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
-  board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + prH0) + "px;top:-" + prH0 + 'px"></div>' + html;
-  board.style.top = prH0 + "px"; board.style.position = "absolute";
-  const frost = board.querySelector(".qfrost");
-  if (frost) {
-    // Only the quotient row (not the side-multiply factor, dividend, or work).
-    const qRow = [...board.querySelectorAll(".cell")].filter(c => {
-      if (c.classList.contains("sidefac") || c.classList.contains("rlabel")) return false;
-      const top = parseFloat(c.style.top);
-      if (!Number.isFinite(top) || top >= Y(1) - 1) return false;
-      const left = parseFloat(c.style.left);
-      if (Number.isFinite(left) && left >= X(P.n) - 1) return false; // remainder sits past the dividend
-      return c.classList.contains("quo") || c.classList.contains("qtarget") || c.classList.contains("slot");
-    });
-    if (qRow.length) {
-      const br = board.getBoundingClientRect();
-      let L = 1e9, T = 1e9, R = -1e9, B = -1e9;
-      qRow.forEach(c => { const r = c.getBoundingClientRect(); L = Math.min(L, r.left); R = Math.max(R, r.right); T = Math.min(T, r.top); B = Math.max(B, r.bottom); });
-      const padX = 14, padY = 8;
-      frost.style.left = (L - br.left - padX) + "px";
-      frost.style.top = (T - br.top - padY) + "px";
-      frost.style.width = (R - L + padX * 2) + "px";
-      frost.style.height = (B - T + padY * 2) + "px";
-    } else {
-      frost.style.width = "0"; frost.style.height = "0";
-    }
-  }
-  // prompt
-  const pr = $("#prompt"); pr.className = P.msgCls || ""; pr.textContent = P.msg || defaultPrompt();
-  const workEl = $("#work");
-  const pinEl = $("#pin");
-  // Pin a copy of the quotient, dividend, divisor and bracket so they stay visible while work rows scroll.
-  // Phone landscape uses a tall left pane and large digits; skip the pin so it cannot overlap the vine/divisor.
-  if (pinEl && workEl) {
-    const pinCut = Y(2);
-    const prH = (pr && pr.offsetHeight) || 28;
-    const overflows = !isPhoneLand() && workEl.scrollHeight > workEl.clientHeight + 2;
-    pinEl.hidden = !overflows;
-    pinEl.style.top = prH + "px";
-    pinEl.style.height = "0";
-    pinEl.style.marginBottom = "0";
-    if (!overflows) { pinEl.innerHTML = ""; }
-    else {
-      const inner = document.createElement("div");
-      inner.className = "pin-inner";
-      inner.style.height = pinCut + "px";
-      inner.style.setProperty("--cw", cw + "px"); inner.style.setProperty("--rh", rh + "px"); /* pinned copy keeps the digit size */
-      [...board.childNodes].forEach(el => {
-        if (!el || el.nodeType !== 1) return;
-        if (el.classList.contains("paperbg") || el.classList.contains("side") || el.classList.contains("side-in")) return;
-        const top = parseFloat(el.style.top);
-        const isHead = (el.tagName === "svg" && el.classList.contains("bracket")) || (Number.isFinite(top) && top < pinCut - 0.5);
-        if (isHead) {
-          inner.appendChild(el.cloneNode(true));
-          el.style.visibility = "hidden"; // originals would ghost through once scrolled
-        }
-      });
-      pinEl.innerHTML = "";
-      pinEl.appendChild(inner);
-    }
-  }
-  // Keep the active spot visible below the sticky prompt + pinned dividend; never cover the dividend.
-  const act = board.querySelector(".slot, .nudge, .cmpnum");
+  board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + L.prH) + "px;top:-" + L.prH + 'px"></div>' + html;
+  board.style.top = L.prH + "px"; board.style.position = "absolute";
+  // keep the active spot visible
+  const workEl = $("#work"), act = board.querySelector(".slot, .tap");
   if (act && workEl && workEl.scrollHeight > workEl.clientHeight) {
-    const promptH = (pr && pr.offsetHeight) || 28;
-    const pinH = (pinEl && !pinEl.hidden) ? (pinEl.offsetHeight || 0) : 0;
-    const wr = workEl.getBoundingClientRect(), ar = act.getBoundingClientRect();
-    const topKeep = wr.top + promptH + pinH + 4;
-    const room = ar.top - topKeep;
-    if (ar.bottom > wr.bottom - 4 && room > 0) workEl.scrollTop = Math.min(workEl.scrollTop + (ar.bottom - wr.bottom + 4), workEl.scrollTop + room);
+    const wr = workEl.getBoundingClientRect(), ar = act.getBoundingClientRect(), topKeep = wr.top + L.prH + 4;
+    if (ar.bottom > wr.bottom - 4 && ar.top - topKeep > 0) workEl.scrollTop = Math.min(workEl.scrollTop + (ar.bottom - wr.bottom + 4), workEl.scrollTop + (ar.top - topKeep));
   }
-  fresh.forEach(f => { if (f.startsWith("heart:")) return; }); fresh.clear();
+  fresh.clear();
 }
 function defaultPrompt() {
-  const P = G.P, cy = curCy();
-  if (P.short) switch (P.phase) {
-    case "place": return "Tap the space above the line where the first answer digit goes.";
-    case "sdq": return "Tap the next space above the line.";
-    case "sdtype": return "Type the answer digit. Do the math in your head!";
-    case "sdleft": return "Got a leftover? Tap between the numbers to tuck it in small.";
-    case "sdlefttype": return "Type the leftover.";
-    case "sdrem": return "No numbers left. Type the remainder after R.";
-  }
+  const P = G.P;
   switch (P.phase) {
-    case "place": return "Tap the space above the dividend where the quotient starts.";
-    case "quotient": return "Divide: how many " + P.d + "s fit in " + parseInt(cy.topStr, 10) + "?";
-    case "needStep": return P.expect === "final" ? "No digits left to bring down. What's next?" : "What's the next step?";
-    case "multiply": { const st = cy.mul.steps[cy.mul.idx]; if (!st) return "Multiply: done!"; return st.kind === "carry" ? "Multiply: write the carry." : st.kind === "lead" ? "Multiply: write the last carry in front." : "Multiply: write the ones digit."; }
-    case "subtract": return "Subtract, right to left.";
-    case "compare": return "Compare with the divisor.";
-    case "remEntry": return "Write the remainder.";
-    case "complete": return "Solved! " + P.D + " ÷ " + P.d + " = " + P.A.quotient.replace(/^0+(?=\d)/, "") + (P.A.remainder ? " R " + P.A.remainder : "");
+    case "pick": return P.k === 0 ? "Tap the ones digit of the bottom number — the first digit you multiply by." : "Tap the " + placeName(P.k) + " digit of the bottom number.";
+    case "needStep": return P.expect === "add" ? "All the rows are done. What's the next step?" : "What's the next step?";
+    case "mult": { const st = P.an.rows[P.k].steps[P.idx]; if (!st) return "Multiply: done!"; return st.kind === "carry" ? "Write the carry above the next digit." : st.kind === "lead" ? "Write the last carry in front." : st.cin ? "Multiply, add the carry, and write the ones digit." : "Multiply and write the ones digit."; }
+    case "sum": { const st = P.an.sum[P.sidx]; if (!st) return "Add: done!"; return st.kind === "scarry" ? "Write the carry above the next column." : st.cin ? "Add this column and the carry. Write the ones digit." : "Add this column. Write the ones digit."; }
+    case "complete": return "Solved! " + P.A + " × " + P.B + " = " + P.an.product;
     case "over": return "Out of strength.";
   }
   return "";
 }
+
 function renderHeader() {
   $("#h-level").textContent = "E" + (G.episode + 1) + " · L" + (G.level + 1);
   const ln = document.getElementById("h-lvname"); if (ln) ln.textContent = LVI(G.episode, G.level) ? LVI(G.episode, G.level).name : "";
@@ -2316,23 +1849,15 @@ function renderHeader() {
   if (fresh.has("refill")) { m.classList.remove("charge"); void m.offsetWidth; m.classList.add("charge"); }
 }
 function renderInput() {
-  const cbar = document.getElementById("cmpbar"), showCmp = !!G.P && !G.overlay && G.P.phase === "compare";
-  if (cbar.hidden === showCmp) { cbar.hidden = !showCmp; if (showCmp) { cbar.classList.remove("in"); void cbar.offsetWidth; cbar.classList.add("in"); } }
   const P = G.P, ph = P ? P.phase : "none";
   const playing = P && !G.overlay && ph !== "complete" && ph !== "over";
-  const mid = ph === "multiply";
-  const activeStep = { place: "divide", quotient: "divide", multiply: "multiply", subtract: "subtract", compare: "compare" }[ph];
+  const mid = ph === "mult" || ph === "sum";
+  const activeStep = { mult: "multiply", sum: "add" }[ph];
   $$(".step").forEach(b => { b.disabled = !playing || mid; b.classList.toggle("active", !!playing && b.dataset.step === activeStep); });
-  const keysOn = playing && ["quotient", "multiply", "subtract", "remEntry", "sdtype", "sdlefttype", "sdrem"].includes(ph);
-  document.body.classList.toggle("sdmode", !!(P && P.short));
-  const sdw = document.getElementById("sdsw");
-  if (sdw) { const show = !!P && sdAvail() && G.started && P.d < 10; sdw.hidden = !show; document.body.classList.toggle("sdsw-on", show);
-    const tg = document.getElementById("sdtoggle"); if (tg) { tg.classList.toggle("on", SD.on); tg.setAttribute("aria-checked", SD.on ? "true" : "false"); }
-    sdw.querySelectorAll(".sdlab").forEach(b => b.classList.toggle("on", (b.dataset.sdmode === "short") === SD.on)); sdPlace(); }
+  const keysOn = playing && mid;
   $$(".key").forEach(b => { b.disabled = !keysOn; });
-  $("#btn-rem").disabled = !playing || mid; $("#btn-done").disabled = !playing || mid;
-  $("#btn-cant").classList.toggle("hidden", ph !== "subtract"); $("#btn-cant").disabled = !playing;
 }
+
 function epSeg(sel, attr) {
   const cnt = DEV ? EPISODES.length : unlocked();
   return '<div class="seg epseg">' + EPISODES.slice(0, cnt).map((E, i) => '<button data-' + attr + '="' + i + '" class="' + (sel === i ? "sel" : "") + '">Episode ' + (i + 1) + '<span class="soon">' + (E.secs / 60) + ":00 per problem</span></button>").join("") + "</div>";
@@ -2350,12 +1875,12 @@ function renderOverlay() {
   root.dataset.sig = JSON.stringify(o);
   let h = "";
   if (o.type === "start") {
-    h = '<h1>Division Dash</h1><p>Divide · Multiply · Subtract · Compare · Bring down</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
-      LEVELS.map((L, i) => '<button class="lv' + ((o.sel || 0) === i ? " sel" : "") + '" data-lv="' + i + '"><b>' + (i + 1) + ". " + L.name + "</b><span>" + L.desc + "</span></button>").join("") +
+    h = '<h1>Multiplication Madness</h1><p>Multiply · Place holder · Add</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
+      LEVELS_EP[o.ep || 0].map((L, i) => '<button class="lv' + ((o.sel || 0) === i ? " sel" : "") + '" data-lv="' + i + '"><b>' + (i + 1) + ". " + L.name + "</b><span>" + L.desc + "</span></button>").join("") +
       '</div><button class="big" data-act="next">Start E' + ((o.ep || 0) + 1) + " · Level " + ((o.sel || 0) + 1) + "</button>";
   } else if (o.type === "solved") {
     const P = G.P;
-    h = "<h2>Problem solved!</h2>" + starsHtml(o.stars) + '<div class="eq hand">' + P.D + " ÷ " + P.d + " = " + P.A.quotient.replace(/^0+(?=\d)/, "") + (P.A.remainder ? " R " + P.A.remainder : "") + "</div><p>" +
+    h = "<h2>Problem solved!</h2>" + starsHtml(o.stars) + '<div class="eq hand">' + P.A + " × " + P.B + " = " + P.an.product + "</div><p>" +
       (P.pens === 0 ? "Perfect — no mistakes!" : P.pens + (P.pens === 1 ? " slip" : " slips") + " this time.") + '</p><button class="big" data-act="next">' + (G.probIdx + 1 >= G.problems.length ? "Finish level" : "Next problem") + " ▶</button>";
   } else if (o.type === "level") {
     const tot = G.stars.reduce((a, b) => a + (b || 0), 0);
@@ -2367,15 +1892,13 @@ function renderOverlay() {
     h = '<div class="epbadge">🎉</div><h1>Episode ' + (G.episode + 1) + " complete!</h1><p>You escaped " + EP_INFO[G.episode].name.toLowerCase() + "! " + tot + " of 12 stars.</p>" + refillHtml(o) +
       '<p class="epnext">Episode ' + (G.episode + 2) + ": " + EP_INFO[G.episode + 1].name + " — only <b>" + nx + ":00</b> per problem.</p>" + '<button class="big" data-act="next">On to Episode ' + (G.episode + 2) + ' ▶</button>';
   } else if (o.type === "timeup") {
-    h = '<div class="epbadge">⏰</div><h2>Time\'s up!</h2><p>Try Level ' + (G.level + 1) + " again — " + LEVELS[G.level].name + ". You have " + fmtTime(EPISODES[G.episode].secs) + " per problem. Your strength stays at " + Math.round(G.strength) + "%.</p>" + '<button class="big" data-act="next">Try Level ' + (G.level + 1) + " again ▶</button>";
+    h = '<div class="epbadge">⏰</div><h2>Time\'s up!</h2><p>Try Level ' + (G.level + 1) + " again — " + lvCfg(G.episode, G.level).name + ". You have " + fmtTime(EPISODES[G.episode].secs) + " per problem. Your strength stays at " + Math.round(G.strength) + "%.</p>" + '<button class="big" data-act="next">Try Level ' + (G.level + 1) + " again ▶</button>";
   } else if (o.type === "all") {
-    h = '<div class="epbadge">🏆</div><h1>Man vs. Math Champion!</h1><p>You survived all three episodes — every level, against the clock.</p>' + refillHtml(o) + '<button class="big" data-act="next">Back to the title</button>';
+    h = '<div class="epbadge">🏆</div><h1>Multiplication Madness Champion!</h1><p>You conquered all three episodes — every level, against the clock.</p>' + refillHtml(o) + '<button class="big" data-act="next">Back to the title</button>';
   } else if (o.type === "over") {
-    h = "<h2>Out of strength</h2>" + '<div class="refill"><div class="meterbar"><div class="fillbar" style="width:0%"></div></div><div class="pct">0%</div></div>' + "<p>E" + (G.episode + 1) + " · Level " + (G.level + 1) + " — " + LEVELS[G.level].name + ". Recharge to 100% and go back to the start of Episode " + (G.episode + 1) + ".</p>" + '<button class="big" data-act="next">Start Episode ' + (G.episode + 1) + " from Level 1 ▶</button>";
+    h = "<h2>Out of strength</h2>" + '<div class="refill"><div class="meterbar"><div class="fillbar" style="width:0%"></div></div><div class="pct">0%</div></div>' + "<p>E" + (G.episode + 1) + " · Level " + (G.level + 1) + " — " + lvCfg(G.episode, G.level).name + ". Recharge to 100% and go back to the start of Episode " + (G.episode + 1) + ".</p>" + '<button class="big" data-act="next">Start Episode ' + (G.episode + 1) + " from Level 1 ▶</button>";
   } else if (o.type === "settings") {
     h = "<h2>Settings</h2>" +
-      '<div class="set-row"><label>Answer format</label><div class="seg">' +
-      '<button class="sel" data-format="remainders">Remainders</button><button data-format="fractions">Fractions<span class="soon">coming soon</span></button><button data-format="decimals">Decimals<span class="soon">coming soon</span></button></div></div>' +
       '<div class="set-row"><label>Look</label><div class="seg">' + THEMES.map(t => '<button data-theme-btn="' + t[0] + '" class="' + (settings.theme === t[0] ? "sel" : "") + '">' + t[1] + "</button>").join("") + "</div></div>" +
       '<div class="set-row"><label>Sound &amp; feel</label><div class="seg"><button data-toggle="sound" class="' + (settings.sound ? "sel" : "") + '">Sound ' + (settings.sound ? "on" : "off") + '</button><button data-toggle="music" class="' + (settings.music ? "sel" : "") + '">Music ' + (settings.music ? "on" : "off") + '</button><button data-toggle="haptics" class="' + (settings.haptics ? "sel" : "") + '">Vibration ' + (settings.haptics ? "on" : "off") + (canVibrate ? "" : '<span class="soon">not supported on this device</span>') + "</button></div></div>" +
       (DEV ? ('<div class="set-row"><label>Jump to episode &amp; level (restarts with 100% strength)</label>' + epSeg(o.jumpEp !== undefined ? o.jumpEp : G.episode, "jumpep") + '<div class="seg">' + LEVELS.map((L, i) => '<button data-jump="' + i + '"' + (Progress.canJump(o.jumpEp !== undefined ? o.jumpEp : G.episode, i) ? "" : " disabled") + ' class="' + (G.level === i && (o.jumpEp === undefined || o.jumpEp === G.episode) ? "sel" : "") + '">Level ' + (i + 1) + "</button>").join("") + "</div></div>") : "") +
@@ -2387,22 +1910,13 @@ function renderOverlay() {
 /* ================= input wiring ================= */
 function press(el) { if (!el) return; el.classList.add("pressed"); setTimeout(() => el.classList.remove("pressed"), 90); }
 document.addEventListener("click", e => {
-  const t = e.target.closest("button, [data-place], [data-divtap], [data-top], [data-act], [data-sdgap]");
+  const t = e.target.closest("button, [data-pick], [data-act]");
   if (!t) return;
   audio();
   if (t.closest("#cine, #devp")) return;
-  if (t.dataset.place !== undefined) return act("place", +t.dataset.place);
-  if (t.dataset.sdgap !== undefined) return act("sdgap", +t.dataset.sdgap);
-  if (t.dataset.sdmode) { if ((t.dataset.sdmode === "short") !== SD.on) sdToggleInPlay(); return; }
-  if (t.id === "sdtoggle") { if (performance.now() < sdSwipeUntil) return; sdToggleInPlay(); return; }
-  if (t.id === "sd-hide") { SD.noteHidden = true; SFX.step(); render(); return; }
-  if (t.dataset.divtap !== undefined) return act("divtap", +t.dataset.divtap);
-  if (t.dataset.top !== undefined) return act("top", +t.dataset.top);
+  if (t.dataset.pick !== undefined) return act("pick", +t.dataset.pick);
   if (t.dataset.step) return act("step", t.dataset.step);
   if (t.dataset.key) return act("digit", +t.dataset.key);
-  if (t.id === "btn-rem") return act("remainder");
-  if (t.id === "btn-done") return act("done");
-  if (t.id === "btn-cant") return act("cant");
   if (t.id === "btn-settings") { if (G.overlay && G.overlay.type === "settings") return; G.overlay = { type: "settings", prev: G.overlay }; render(); return; }
   if (t.dataset.ep !== undefined) { G.overlay.ep = +t.dataset.ep; SFX.step(); render(); return; }
   if (t.dataset.jumpep !== undefined) { G.overlay.jumpEp = +t.dataset.jumpep; SFX.step(); render(); return; }
@@ -2413,12 +1927,8 @@ document.addEventListener("click", e => {
     if (t.dataset.toggle === "music" || t.dataset.toggle === "sound") { if (settings.music && settings.sound) { if (G.P && !Cine.visible) Music.play("bed"); } else Music.stop(); if (!settings.music || !settings.sound) { RecAudio.stopTheme(0.3); RecAudio.stopCue(0.3); if (!settings.sound) RecAudio.stopNarr(0.1); } } $("#overlay-root").dataset.sig = ""; if (t.dataset.toggle === "haptics") haptic(30); else SFX.step(); render(); return; }
   if (t.dataset.jump !== undefined) { const ep = G.overlay.jumpEp !== undefined ? G.overlay.jumpEp : G.episode; flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; Music.play("bed"); newLevel(+t.dataset.jump, false); preloadLevel(+t.dataset.jump); return; }
   if (t.dataset.act === "next") return act("next");
-  if (t.dataset.act === "yes") return act("yes");
-  if (t.dataset.act === "no") return act("no");
 });
-const KEYMAP = { "/": ["step", "divide"], "÷": ["step", "divide"], "*": ["step", "multiply"], "x": ["step", "multiply"], "X": ["step", "multiply"], "-": ["step", "subtract"],
-  "<": ["step", "compare"], ",": ["step", "compare"], "b": ["step", "bring"], "B": ["step", "bring"], "ArrowDown": ["step", "bring"],
-  "r": ["remainder"], "R": ["remainder"], "y": ["yes"], "Y": ["yes"], "n": ["no"], "N": ["no"], "c": ["cant"], "C": ["cant"] };
+const KEYMAP = { "*": ["step", "multiply"], "x": ["step", "multiply"], "X": ["step", "multiply"], "×": ["step", "multiply"], "p": ["step", "zero"], "P": ["step", "zero"], "z": ["step", "zero"], "Z": ["step", "zero"], "+": ["step", "add"], "a": ["step", "add"], "A": ["step", "add"] };
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -2438,7 +1948,7 @@ document.addEventListener("keydown", e => {
     const k = document.querySelector('.key[data-key="' + e.key + '"]'); if (k && k.disabled) return;
     act("digit", +e.key); e.preventDefault(); return;
   }
-  if (e.key === "Enter") { e.preventDefault(); if (G.overlay) return act("next"); return act("done"); }
+  if (e.key === "Enter") { e.preventDefault(); if (G.overlay) return act("next"); return; }
   const m = KEYMAP[e.key];
   if (m && !G.overlay) { e.preventDefault(); if (m[0] === "step") press(document.querySelector(STEP_SEL(m[1]))); act(m[0], m[1]); }
 });
@@ -2725,11 +2235,11 @@ const Music = (() => {
    Intros freeze there; INTRO_BEAT_FRAME is the first 24 fps frame at/after the beat (frame 260 = 10.8333 s). */
 const INTRO_BEAT = 10.830, INTRO_BEAT_FRAME = 260 / 24 + 0.001;
 const RecAudio = (() => {
-  const SRC = { theme: "assets/music/main-theme.mp3", intro: "assets/music/level-intro.mp3", n0: "assets/narration/ep1-narration.mp3?v=20261112-letsgo", n1: "assets/narration/ep2-narration.mp3?v=20261112-letsgo", n2: "assets/narration/ep3-narration.mp3?v=20261112-letsgo" };
+  const SRC = { theme: "assets/music/main-theme.mp3", intro: "assets/music/level-intro.mp3", n0: "assets/narration/ep1-narration.mp3?v=mm1", n1: "assets/narration/ep2-narration.mp3?v=mm1", n2: "assets/narration/ep3-narration.mp3?v=mm1" };
   const LINES = [
-    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 10.889, "We have a big challenge in front of us today."], [11.539, 16.021, "We're going to brave a jungle of long division and get through to the other side."], [16.821, 22.632, "If we watch our steps and stay focused, we hope to reach the rendezvous point in one piece!"], [23.432, 26.338, "Hit the continue button to get dropped off at the starting point."], [26.988, 28.156, "Are you ready? Let's go!"]],
-    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 10.889, "We have a big challenge in front of us today."], [11.539, 16.311, "We're going to traverse a long savanna of division and we need to move fast."], [17.111, 24.531, "Every quotient found divides the distance so that, hopefully, we can reach the rendezvous point in one piece!"], [25.331, 28.238, "Hit the continue button to get dropped off at the starting point."], [28.888, 30.056, "Are you ready? Let's go!"]],
-    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 16.275, "We have our biggest challenge in front of us today. We're going to scale a frozen mountain of long division and make it to the other side."], [17.075, 23.394, "We'll need to move faster than ever to avoid freezing and reach the rendezvous point before time runs out."], [24.194, 26.921, "Hit the continue button to get dropped off at the base."], [27.571, 28.738, "Are you ready? Let's go!"]]
+    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 10.889, "We have a big challenge in front of us today."], [11.689, 16.943, "We're going to cross a smoking volcano island of long multiplication and get to the other side."], [17.743, 23.553, "If we watch our steps and stay focused, we hope to reach the rendezvous point in one piece!"], [24.353, 27.26, "Hit the continue button to get dropped off at the starting point."], [27.91, 29.191, "Are you ready? Let's go!"]],
+    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 10.889, "We have a big challenge in front of us today."], [11.689, 16.75, "We're going to cross a scorching canyon of long multiplication, and we need to move fast."], [17.55, 24.495, "Every product we find builds a bridge across the chasm so that, hopefully, we can reach the rendezvous point in one piece!"], [25.295, 28.201, "Hit the continue button to get dropped off at the starting point."], [28.851, 30.132, "Are you ready? Let's go!"]],
+    [[0.4, 3.106, "I'm Rex Ranger, and this is Man Versus Math."], [3.756, 8.163, "Every explorer has a choice. Turn back or solve the problem in front of them."], [8.813, 16.606, "We have our biggest challenge in front of us today. We're going to climb a lost jungle temple of long multiplication and make it to the other side."], [17.406, 22.774, "We'll need to move faster than ever to dodge the traps and reach the rendezvous point before time runs out."], [23.574, 26.426, "Hit the continue button to get dropped off at the temple gate."], [27.076, 28.357, "Are you ready? Let's go!"]],
   ];
   const DUCK = 0.42; /* about -7.5 dB under the voice */
   const bytes = {}, bufs = {}, decoding = {};
@@ -2926,197 +2436,159 @@ document.addEventListener("visibilitychange", () => { acHidden = document.hidden
 const ASSET = n => "assets/" + n;
 const DEV = /[?&]dev=1\b/.test(location.search);
 const EP_INFO = [
-  { name: "The Jungle", filter: "", soon: "", map: "map-jungle-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
-    pts: [[743, 801], [636, 665], [328, 464], [1116, 303], [761, 184]],
-    lab: [[110, 0], [120, 0], [-115, 45], [90, -45], [-40, 52]],
+  { name: "The Volcano", filter: "", soon: "", map: "map-volcano-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
+    pts: [[760,770],[698,641],[368,491],[1100,367],[862,183]],
+    lab: [[110,10],[125,0],[-115,45],[95,40],[0,52]],
     path: [
-      [743,801],[741,795],[739,789],[736,784],[733,779],[730,774],[725,770],[721,765],
-      [717,761],[712,757],[708,754],[703,750],[698,747],[693,744],[687,741],[682,738],
-      [677,734],[672,731],[667,728],[662,725],[657,721],[652,718],[647,716],[642,712],
-      [640,706],[639,700],[639,694],[639,688],[639,682],[639,676],[638,670],[636,665],
-      [633,660],[629,655],[625,651],[621,647],[616,642],[612,638],[608,634],[603,630],
-      [599,626],[594,623],[588,621],[582,620],[576,619],[571,616],[566,613],[561,609],
-      [557,605],[553,600],[549,596],[544,592],[540,588],[535,585],[530,582],[524,579],
-      [519,576],[514,573],[508,571],[503,569],[497,567],[491,565],[485,563],[480,562],
-      [474,560],[468,559],[462,557],[456,556],[451,554],[445,552],[439,551],[433,549],
-      [428,548],[422,546],[416,544],[410,542],[405,540],[399,538],[394,536],[388,534],
-      [383,531],[378,528],[373,525],[368,521],[363,517],[358,514],[354,509],[350,505],
-      [346,501],[342,496],[338,492],[334,487],[331,482],[330,476],[328,470],[328,464],
-      [328,458],[329,452],[331,447],[334,441],[338,437],[342,432],[346,428],[351,424],
-      [355,420],[361,417],[366,415],[372,412],[377,410],[383,408],[388,406],[394,405],
-      [400,403],[406,402],[412,401],[418,400],[424,399],[429,397],[435,396],[441,395],
-      [447,394],[453,394],[459,393],[465,392],[471,392],[477,392],[483,393],[489,393],
-      [495,393],[501,394],[507,395],[513,396],[519,397],[525,398],[530,399],[536,401],
-      [542,402],[548,403],[554,405],[559,407],[565,408],[571,410],[577,411],[583,412],
-      [589,414],[594,415],[600,416],[606,418],[612,419],[618,420],[624,421],[630,421],
-      [636,422],[642,423],[648,424],[654,425],[660,425],[666,425],[672,425],[678,425],
-      [684,425],[690,424],[696,424],[702,424],[708,424],[714,423],[720,422],[725,422],
-      [731,421],[737,420],[743,419],[749,418],[755,417],[761,416],[767,415],[773,414],
-      [779,413],[785,412],[790,411],[796,409],[802,408],[808,407],[814,405],[820,404],
-      [826,404],[832,403],[838,402],[844,401],[850,401],[856,400],[861,399],[867,398],
-      [873,397],[879,396],[885,395],[891,394],[897,393],[903,392],[909,391],[915,391],
-      [921,390],[927,390],[933,389],[939,388],[944,387],[950,385],[956,384],[962,383],
-      [968,382],[974,381],[980,380],[986,379],[992,378],[998,377],[1003,375],[1009,374],
-      [1015,373],[1021,371],[1027,370],[1033,369],[1038,367],[1044,365],[1050,363],[1055,361],
-      [1061,359],[1067,357],[1072,355],[1078,353],[1083,350],[1088,346],[1093,343],[1098,339],
-      [1102,335],[1106,331],[1110,326],[1113,321],[1114,315],[1115,309],[1116,303],[1114,297],
-      [1112,292],[1109,287],[1105,282],[1101,278],[1096,274],[1091,271],[1086,267],[1081,264],
-      [1076,262],[1070,260],[1064,258],[1059,256],[1053,254],[1047,252],[1042,250],[1036,248],
-      [1030,246],[1024,245],[1018,244],[1012,243],[1007,241],[1001,240],[995,239],[989,238],
-      [983,236],[977,235],[971,234],[965,233],[960,232],[954,231],[948,229],[942,228],
-      [936,227],[930,226],[924,225],[918,224],[913,222],[907,221],[901,219],[895,218],
-      [889,216],[883,215],[878,214],[872,213],[866,211],[860,210],[854,208],[848,207],
-      [843,205],[837,204],[831,202],[825,201],[819,199],[814,198],[808,196],[802,194],
-      [796,192],[791,191],[785,189],[779,188],[773,186],[767,185],[761,184]
+      [760,770],[759,764],[757,758],[756,753],[755,747],[754,741],[753,735],[751,729],
+      [749,724],[747,718],[746,712],[746,706],[745,700],[744,694],[742,688],[740,683],
+      [738,677],[736,671],[734,666],[732,660],[730,654],[728,649],[726,643],[721,640],
+      [715,638],[709,638],[703,639],[698,641],[693,644],[688,648],[683,651],[678,655],
+      [672,657],[667,657],[661,656],[655,654],[650,650],[646,646],[645,640],[645,634],
+      [645,628],[644,622],[641,617],[636,613],[631,611],[625,609],[619,607],[613,607],
+      [607,608],[602,610],[596,611],[590,611],[584,611],[578,609],[574,604],[572,599],
+      [569,594],[563,593],[559,596],[553,599],[547,599],[542,597],[536,595],[531,593],
+      [525,591],[519,588],[514,586],[508,584],[503,582],[497,580],[491,578],[486,576],
+      [480,574],[474,573],[468,571],[463,568],[457,566],[451,565],[446,563],[440,562],
+      [434,560],[429,558],[423,556],[417,554],[411,552],[406,550],[400,548],[395,546],
+      [389,545],[383,543],[377,541],[372,538],[367,535],[363,531],[360,525],[360,519],
+      [361,514],[363,508],[365,502],[366,496],[368,491],[371,485],[375,481],[379,476],
+      [383,472],[388,468],[392,465],[398,462],[403,459],[409,457],[414,454],[419,451],
+      [424,447],[428,443],[432,439],[437,435],[441,431],[445,427],[450,422],[454,418],
+      [459,414],[464,411],[469,409],[475,408],[481,408],[487,408],[493,407],[499,406],
+      [505,406],[511,405],[517,403],[523,401],[529,400],[535,399],[541,399],[547,399],
+      [553,399],[559,398],[565,398],[571,398],[577,399],[582,400],[588,403],[593,406],
+      [598,408],[604,410],[610,411],[616,412],[622,414],[627,417],[632,420],[637,423],
+      [642,427],[647,429],[653,431],[659,432],[665,432],[671,431],[677,430],[683,429],
+      [689,429],[695,429],[701,429],[707,430],[713,430],[719,431],[725,431],[731,432],
+      [737,432],[743,431],[749,430],[755,429],[761,428],[766,427],[772,426],[778,424],
+      [784,423],[790,422],[796,421],[802,420],[807,418],[813,416],[819,415],[825,415],
+      [831,415],[837,414],[843,413],[849,411],[854,409],[860,408],[866,407],[872,406],
+      [878,405],[884,404],[890,404],[896,403],[901,402],[907,400],[913,399],[919,398],
+      [925,397],[931,396],[937,396],[943,396],[949,395],[955,394],[961,393],[967,392],
+      [973,391],[978,390],[984,388],[990,386],[996,385],[1002,384],[1008,383],[1013,381],
+      [1019,380],[1025,378],[1031,377],[1037,376],[1043,374],[1048,372],[1054,370],[1059,367],
+      [1065,365],[1071,365],[1077,365],[1083,366],[1089,367],[1095,368],[1100,367],[1106,365],
+      [1112,363],[1117,360],[1122,356],[1127,353],[1130,348],[1134,343],[1137,338],[1139,332],
+      [1141,327],[1142,321],[1141,315],[1139,309],[1137,304],[1134,298],[1131,293],[1127,289],
+      [1122,285],[1117,282],[1112,279],[1106,277],[1101,275],[1095,272],[1090,269],[1085,266],
+      [1080,263],[1074,261],[1069,259],[1063,257],[1057,256],[1051,255],[1045,254],[1039,253],
+      [1033,251],[1027,250],[1022,250],[1016,249],[1010,249],[1004,248],[998,248],[992,248],
+      [986,249],[981,252],[976,255],[970,256],[964,255],[958,254],[952,252],[946,250],
+      [941,250],[935,249],[929,246],[924,243],[920,238],[916,234],[912,230],[906,228],
+      [901,225],[895,223],[889,223],[883,223],[877,223],[871,221],[866,218],[863,212],
+      [862,207],[862,201],[862,195],[862,189],[862,183]
     ] },
-  { name: "The Savanna", filter: "", soon: "", map: "map-savanna-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
-    pts: [[776, 804], [761, 659], [1252, 410], [419, 351], [577, 182]],
-    lab: [[110, 0], [125, 5], [118, 8], [-110, 10], [-10, -45]],
+  { name: "The Canyon", filter: "", soon: "", map: "map-canyon-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
+    pts: [[752,802],[660,651],[1060,490],[487,358],[905,182]],
+    lab: [[110,0],[-125,10],[120,30],[-125,-5],[0,52]],
     path: [
-      [776,804],[779,799],[782,794],[786,789],[789,784],[792,779],[796,774],[799,769],
-      [801,763],[803,757],[802,751],[800,746],[796,741],[793,736],[789,731],[785,727],
-      [780,723],[775,720],[771,716],[766,712],[763,707],[761,701],[761,695],[761,689],
-      [761,683],[761,677],[761,671],[761,665],[761,659],[761,653],[761,647],[761,641],
-      [761,635],[761,629],[761,623],[763,618],[768,614],[773,611],[779,610],[785,608],
-      [791,606],[796,605],[802,603],[808,602],[814,600],[820,599],[825,598],[831,597],
-      [837,596],[843,595],[849,595],[855,594],[861,593],[867,592],[873,591],[879,590],
-      [885,589],[891,588],[897,587],[902,585],[908,584],[914,583],[920,582],[926,580],
-      [932,579],[938,578],[944,577],[949,575],[955,573],[961,572],[967,570],[972,569],
-      [978,567],[984,566],[990,564],[996,563],[1001,561],[1007,559],[1013,557],[1018,555],
-      [1024,553],[1030,551],[1035,548],[1041,546],[1046,544],[1052,541],[1057,539],[1062,536],
-      [1068,533],[1073,530],[1078,527],[1083,524],[1088,521],[1093,517],[1098,513],[1102,509],
-      [1106,505],[1110,500],[1113,495],[1115,490],[1116,484],[1115,478],[1114,472],[1112,466],
-      [1110,461],[1107,455],[1105,450],[1101,445],[1097,440],[1093,436],[1093,431],[1099,429],
-      [1105,428],[1111,428],[1117,427],[1123,427],[1129,426],[1135,425],[1141,424],[1147,423],
-      [1152,423],[1158,422],[1164,421],[1170,420],[1176,420],[1182,419],[1188,418],[1194,418],
-      [1200,418],[1206,417],[1212,417],[1218,416],[1224,416],[1230,415],[1236,415],[1242,415],
-      [1248,415],[1254,415],[1260,414],[1266,413],[1272,412],[1278,411],[1283,409],[1289,406],
-      [1294,403],[1298,398],[1301,393],[1304,388],[1306,383],[1309,377],[1311,372],[1313,366],
-      [1315,360],[1315,354],[1314,349],[1312,343],[1310,337],[1307,332],[1304,327],[1301,322],
-      [1298,316],[1295,311],[1292,306],[1288,301],[1285,296],[1281,294],[1276,293],[1270,291],
-      [1264,289],[1258,288],[1253,286],[1247,284],[1241,282],[1235,281],[1230,279],[1224,278],
-      [1218,276],[1212,275],[1206,273],[1200,272],[1194,271],[1189,270],[1183,269],[1177,269],
-      [1171,268],[1165,268],[1159,268],[1153,269],[1147,269],[1141,270],[1135,270],[1129,271],
-      [1123,272],[1117,274],[1111,275],[1105,276],[1099,278],[1094,279],[1088,280],[1082,282],
-      [1076,283],[1070,284],[1064,286],[1059,288],[1053,290],[1048,293],[1042,295],[1037,298],
-      [1032,301],[1027,304],[1022,307],[1017,310],[1012,314],[1007,318],[1002,321],[998,325],
-      [994,330],[990,334],[986,339],[982,344],[979,349],[975,353],[972,358],[968,363],
-      [964,368],[961,373],[957,378],[954,383],[951,388],[948,393],[946,398],[944,404],
-      [942,410],[941,416],[938,421],[935,426],[929,429],[923,429],[917,429],[911,429],
-      [905,429],[901,428],[895,428],[889,428],[884,427],[878,426],[872,426],[866,426],
-      [860,425],[854,425],[848,424],[842,424],[836,423],[830,423],[824,422],[818,422],
-      [812,421],[806,421],[800,420],[794,420],[788,419],[782,418],[776,418],[770,417],
-      [764,417],[758,417],[752,416],[746,416],[740,415],[734,415],[728,414],[722,414],
-      [716,413],[710,412],[704,412],[698,411],[692,411],[686,410],[680,409],[674,409],
-      [668,408],[662,407],[656,407],[650,406],[645,406],[639,405],[633,405],[627,404],
-      [621,403],[615,403],[609,403],[603,402],[597,401],[591,401],[585,400],[579,399],
-      [573,399],[567,398],[561,397],[555,397],[549,397],[543,397],[537,396],[531,395],
-      [525,394],[519,393],[513,392],[507,391],[501,390],[496,389],[490,388],[484,387],
-      [478,386],[472,384],[466,383],[460,381],[455,379],[449,377],[444,375],[438,372],
-      [433,369],[428,366],[424,362],[420,357],[419,351],[420,345],[422,340],[426,335],
-      [430,331],[435,327],[440,324],[446,321],[451,319],[457,316],[462,314],[468,312],
-      [474,311],[479,309],[485,308],[491,306],[497,305],[503,304],[509,302],[514,301],
-      [520,300],[526,299],[532,298],[538,297],[544,296],[550,295],[556,294],[562,293],
-      [568,292],[574,291],[580,290],[586,290],[591,289],[597,288],[603,287],[609,286],
-      [615,285],[621,284],[627,283],[633,283],[639,282],[645,281],[651,280],[657,279],
-      [663,279],[669,278],[675,277],[681,276],[687,276],[692,275],[698,274],[704,273],
-      [710,272],[716,272],[722,271],[728,270],[734,269],[740,269],[746,268],[752,267],
-      [758,266],[764,265],[770,264],[776,264],[782,263],[788,262],[794,261],[799,260],
-      [805,259],[811,259],[817,258],[823,257],[829,256],[835,255],[841,254],[847,253],
-      [853,252],[859,252],[865,251],[871,250],[877,249],[883,247],[888,246],[894,245],
-      [900,244],[906,243],[912,242],[918,241],[924,239],[929,237],[935,235],[939,230],
-      [938,224],[934,220],[929,218],[923,217],[917,216],[911,215],[905,214],[899,214],
-      [893,213],[887,213],[881,212],[875,212],[869,211],[863,210],[857,210],[851,209],
-      [845,208],[839,207],[833,206],[827,206],[821,205],[815,205],[809,204],[804,203],
-      [798,203],[792,202],[786,201],[780,201],[774,200],[768,200],[762,199],[756,198],
-      [750,198],[744,198],[738,197],[732,197],[726,196],[720,196],[714,195],[708,194],
-      [702,194],[696,193],[690,193],[684,193],[678,192],[672,191],[666,191],[660,190],
-      [654,190],[648,189],[642,189],[636,188],[630,187],[624,186],[618,186],[612,185],
-      [606,185],[600,185],[594,184],[589,183],[583,183],[577,182]
+      [752,802],[750,797],[750,791],[752,785],[755,780],[758,774],[760,769],[761,763],
+      [761,757],[760,751],[758,745],[756,740],[753,735],[750,729],[746,724],[743,720],
+      [739,715],[734,711],[730,707],[725,703],[721,699],[716,696],[711,692],[706,689],
+      [701,685],[696,682],[691,679],[686,675],[681,672],[676,669],[672,665],[667,661],
+      [663,656],[660,651],[658,646],[657,640],[657,634],[660,628],[663,623],[667,619],
+      [671,615],[676,611],[681,608],[686,605],[692,603],[697,601],[703,599],[709,598],
+      [715,598],[721,596],[726,593],[732,590],[737,588],[742,585],[748,584],[754,584],
+      [760,584],[766,584],[772,584],[778,583],[784,582],[790,580],[795,578],[801,576],
+      [807,575],[813,574],[818,573],[824,571],[830,570],[836,569],[842,567],[848,566],
+      [854,565],[860,564],[866,563],[871,562],[877,561],[883,560],[889,559],[895,558],
+      [901,557],[907,555],[913,554],[919,553],[924,552],[930,551],[936,549],[942,548],
+      [948,547],[954,545],[959,544],[965,542],[971,541],[977,539],[983,538],[989,536],
+      [994,535],[1000,533],[1006,531],[1011,529],[1017,527],[1022,524],[1028,522],[1033,519],
+      [1039,517],[1044,514],[1049,510],[1053,506],[1056,501],[1059,496],[1060,490],[1059,484],
+      [1056,479],[1052,474],[1047,470],[1042,467],[1037,464],[1031,462],[1026,460],[1020,458],
+      [1014,456],[1009,454],[1003,453],[997,451],[991,450],[985,449],[979,448],[974,446],
+      [968,445],[962,444],[956,443],[950,442],[944,441],[938,441],[932,440],[926,439],
+      [920,438],[914,437],[908,436],[902,436],[896,435],[890,434],[885,433],[879,433],
+      [873,432],[867,431],[861,430],[855,429],[849,429],[843,428],[837,427],[831,427],
+      [825,426],[819,425],[813,425],[807,424],[801,423],[795,422],[789,422],[783,421],
+      [777,420],[771,420],[765,419],[759,419],[753,418],[747,417],[742,416],[736,416],
+      [730,415],[724,414],[718,414],[712,413],[706,412],[700,412],[694,411],[688,410],
+      [682,409],[676,408],[670,408],[664,407],[658,406],[652,405],[646,404],[640,403],
+      [635,402],[629,401],[623,400],[617,400],[611,400],[605,399],[599,398],[593,398],
+      [587,397],[581,395],[575,394],[569,393],[563,392],[557,393],[551,393],[545,393],
+      [539,392],[533,391],[527,391],[522,390],[516,389],[510,388],[504,385],[499,383],
+      [494,379],[490,375],[487,370],[486,364],[487,358],[489,352],[491,347],[494,341],
+      [495,336],[497,330],[499,324],[503,320],[508,317],[514,315],[520,313],[525,311],
+      [531,310],[537,309],[543,308],[549,307],[555,306],[561,306],[567,306],[573,305],
+      [579,303],[584,302],[590,300],[596,299],[602,298],[608,297],[614,296],[620,297],
+      [626,296],[632,296],[638,294],[643,293],[649,292],[655,291],[661,290],[667,289],
+      [673,289],[679,288],[685,287],[691,286],[697,285],[703,284],[709,283],[715,282],
+      [720,281],[726,280],[732,279],[738,278],[744,277],[750,276],[756,275],[762,274],
+      [768,272],[774,271],[779,270],[785,268],[791,267],[796,264],[801,260],[806,256],
+      [810,252],[814,248],[818,244],[823,239],[827,235],[831,231],[835,227],[840,222],
+      [844,218],[848,214],[852,210],[857,205],[861,201],[865,197],[869,192],[873,188],
+      [878,185],[883,182],[889,179],[895,178],[901,178],[905,182]
     ] },
-  { name: "Mountain Crossing", filter: "", soon: "", map: "map-mountain-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
-    pts: [[687, 795], [450, 602], [1101, 467], [520, 320], [1218, 354]],
-    lab: [[-110, 0], [-120, -45], [110, 0], [-60, 50], [30, 42]],
+  { name: "The Temple", filter: "", soon: "", map: "map-temple-wide", rendezvous: "Rendezvous Point", startLabel: "Drop-off Location",
+    pts: [[752,814],[490,644],[1122,499],[508,332],[882,167]],
+    lab: [[110,0],[-115,0],[115,0],[-120,0],[-125,0]],
     path: [
-      [687,795],[681,793],[676,790],[672,786],[669,781],[670,775],[673,770],[678,766],
-      [684,764],[689,762],[695,761],[701,760],[707,758],[713,757],[719,755],[724,754],
-      [730,752],[736,750],[741,746],[743,741],[742,735],[738,731],[733,727],[728,725],
-      [722,723],[716,722],[710,720],[704,719],[699,717],[693,716],[687,716],[681,715],
-      [675,714],[669,712],[663,711],[657,710],[651,709],[645,708],[640,706],[634,705],
-      [628,703],[622,702],[616,700],[611,699],[605,697],[599,695],[593,693],[588,691],
-      [582,689],[577,687],[571,684],[566,682],[561,679],[555,676],[550,673],[545,669],
-      [541,665],[536,662],[531,658],[526,655],[521,651],[516,648],[511,645],[506,642],
-      [501,639],[495,636],[490,634],[484,632],[479,629],[474,626],[468,623],[463,620],
-      [458,617],[454,613],[451,608],[450,602],[452,597],[456,592],[461,589],[466,586],
-      [472,584],[477,582],[483,581],[489,580],[495,579],[501,578],[507,577],[513,576],
-      [519,576],[525,575],[531,575],[537,574],[543,573],[549,573],[555,572],[561,572],
-      [567,572],[573,571],[579,571],[585,570],[591,570],[597,570],[603,569],[609,569],
-      [615,568],[621,568],[627,567],[633,567],[639,566],[645,566],[651,566],[656,565],
-      [662,565],[668,564],[674,564],[680,564],[686,563],[692,562],[698,562],[704,562],
-      [710,562],[716,561],[722,561],[728,560],[734,560],[740,559],[746,558],[752,557],
-      [758,557],[764,556],[770,555],[776,554],[782,553],[788,552],[794,551],[800,550],
-      [805,549],[811,548],[817,547],[823,546],[829,545],[835,544],[841,543],[847,541],
-      [853,540],[858,539],[864,538],[870,537],[876,535],[882,534],[888,532],[894,531],
-      [899,530],[905,529],[911,527],[917,526],[923,525],[929,523],[935,522],[940,521],
-      [946,519],[952,518],[958,517],[964,516],[970,514],[976,513],[981,511],[987,510],
-      [993,508],[999,507],[1005,506],[1011,505],[1016,503],[1022,502],[1028,501],[1034,499],
-      [1040,497],[1045,496],[1051,494],[1057,493],[1063,491],[1069,490],[1074,488],[1080,486],
-      [1086,484],[1091,481],[1096,478],[1100,473],[1101,467],[1099,462],[1095,457],[1091,454],
-      [1085,450],[1080,448],[1074,446],[1069,444],[1063,442],[1057,440],[1051,439],[1046,438],
-      [1040,436],[1034,435],[1028,434],[1022,432],[1016,431],[1010,430],[1004,429],[999,428],
-      [993,427],[987,426],[981,425],[975,424],[969,423],[963,423],[957,422],[951,421],
-      [945,420],[939,419],[933,419],[927,418],[921,418],[915,417],[909,417],[903,416],
-      [897,416],[891,415],[885,415],[879,414],[873,414],[867,413],[861,413],[855,413],
-      [849,412],[844,412],[838,411],[832,410],[826,409],[820,409],[814,409],[808,408],
-      [802,407],[796,406],[790,405],[784,404],[778,403],[772,403],[766,402],[760,401],
-      [754,400],[748,399],[742,398],[737,397],[731,396],[725,395],[719,394],[713,394],
-      [707,393],[701,392],[695,391],[689,389],[683,388],[677,387],[672,386],[666,384],
-      [660,383],[654,382],[648,380],[643,378],[637,376],[631,374],[626,372],[620,371],
-      [614,369],[609,366],[603,364],[598,362],[592,359],[587,357],[581,355],[575,352],
-      [570,350],[564,349],[558,347],[553,344],[547,342],[542,339],[537,336],[532,333],
-      [527,329],[523,325],[520,320],[520,314],[524,309],[528,305],[534,302],[539,300],
-      [545,299],[551,298],[557,297],[563,296],[569,295],[575,294],[581,293],[587,291],
-      [592,290],[598,289],[604,288],[610,287],[616,286],[622,285],[628,284],[634,284],
-      [640,283],[646,282],[652,281],[658,280],[664,279],[670,278],[675,277],[681,276],
-      [687,275],[693,274],[699,273],[705,271],[710,269],[715,265],[718,260],[717,254],
-      [714,249],[709,246],[704,243],[698,241],[693,239],[687,236],[682,234],[677,230],
-      [674,225],[674,219],[677,215],[682,212],[688,210],[694,208],[700,207],[706,206],
-      [712,205],[717,204],[723,203],[729,202],[735,201],[741,200],[747,199],[753,198],
-      [759,197],[765,196],[771,195],[777,194],[782,192],[788,191],[794,190],[800,189],
-      [806,187],[812,186],[817,184],[823,183],[829,181],[835,179],[840,177],[846,174],
-      [851,171],[856,167],[859,163],[863,158],[866,153],[875,145],[879,141],[883,136],
-      [886,131],[889,126],[890,120],[889,114],[890,108],[893,103],[898,100],[902,104],
-      [906,109],[909,114],[912,119],[915,124],[915,130],[913,136],[913,142],[915,148],
-      [919,153],[923,157],[927,161],[932,165],[936,168],[942,171],[947,174],[953,176],
-      [958,179],[964,181],[969,183],[975,186],[980,189],[985,191],[990,195],[994,199],
-      [996,205],[997,211],[1000,216],[1002,222],[1005,227],[1008,232],[1012,236],[1017,239],
-      [1023,242],[1028,245],[1034,247],[1039,250],[1045,252],[1050,254],[1056,256],[1061,258],
-      [1067,261],[1072,264],[1075,269],[1076,275],[1077,281],[1079,286],[1081,292],[1084,297],
-      [1087,303],[1090,307],[1095,312],[1099,316],[1104,319],[1109,322],[1114,325],[1120,328],
-      [1125,330],[1131,331],[1137,333],[1143,334],[1149,336],[1154,337],[1160,338],[1166,340],
-      [1172,341],[1178,343],[1183,345],[1189,346],[1195,348],[1201,349],[1207,351],[1212,352],
-      [1218,354]
+      [752,814],[746,811],[741,809],[736,806],[730,803],[725,801],[719,798],[714,796],
+      [708,793],[703,791],[698,788],[692,785],[687,783],[681,780],[676,777],[671,775],
+      [665,772],[660,769],[655,766],[650,763],[644,760],[639,757],[634,755],[629,752],
+      [623,749],[618,746],[613,743],[608,740],[602,737],[597,734],[592,731],[587,728],
+      [581,725],[576,722],[571,719],[566,716],[561,713],[556,710],[551,707],[546,704],
+      [541,700],[536,697],[531,693],[526,690],[521,686],[517,682],[512,678],[508,674],
+      [503,670],[499,666],[496,661],[493,656],[490,650],[490,644],[491,638],[494,633],
+      [499,629],[503,626],[509,623],[514,620],[520,618],[525,616],[531,614],[537,613],
+      [543,611],[549,610],[554,609],[560,608],[566,607],[572,605],[578,604],[584,603],
+      [590,602],[596,601],[601,599],[607,598],[613,596],[619,595],[625,593],[630,591],
+      [636,590],[642,588],[648,587],[654,585],[659,583],[665,582],[671,580],[677,579],
+      [683,578],[689,577],[694,575],[700,574],[706,573],[712,573],[718,572],[724,571],
+      [730,570],[736,570],[742,569],[748,568],[754,568],[760,567],[766,567],[772,566],
+      [778,566],[784,565],[790,565],[796,564],[802,564],[808,563],[814,563],[820,562],
+      [826,562],[832,562],[838,561],[844,561],[850,561],[856,560],[862,560],[868,559],
+      [874,559],[880,558],[886,557],[891,556],[897,555],[903,554],[909,553],[915,552],
+      [921,551],[927,549],[933,548],[939,547],[944,546],[950,545],[956,544],[962,543],
+      [968,542],[974,541],[980,540],[986,539],[992,538],[998,537],[1004,537],[1010,535],
+      [1015,534],[1021,533],[1027,532],[1033,531],[1039,529],[1045,528],[1051,527],[1056,525],
+      [1062,524],[1068,522],[1074,521],[1080,520],[1086,518],[1091,516],[1097,515],[1103,513],
+      [1108,511],[1114,508],[1118,504],[1122,499],[1122,493],[1119,488],[1115,484],[1110,480],
+      [1105,477],[1100,474],[1094,471],[1089,468],[1084,466],[1078,463],[1073,460],[1067,458],
+      [1062,455],[1056,453],[1051,450],[1046,448],[1040,446],[1034,443],[1029,441],[1023,439],
+      [1018,437],[1012,435],[1006,433],[1001,431],[995,429],[989,428],[983,426],[978,425],
+      [972,423],[966,422],[960,421],[954,420],[948,419],[942,418],[936,417],[930,416],
+      [924,415],[918,414],[912,414],[906,413],[901,413],[895,412],[889,412],[883,411],
+      [877,411],[871,410],[865,410],[859,410],[853,409],[847,409],[841,409],[835,409],
+      [829,408],[823,408],[817,408],[811,407],[805,407],[799,407],[793,407],[787,406],
+      [781,406],[775,406],[769,405],[763,405],[757,405],[751,405],[745,405],[739,405],
+      [733,404],[727,404],[721,404],[715,404],[709,404],[703,403],[697,402],[691,402],
+      [685,401],[679,400],[673,398],[667,397],[662,395],[656,394],[650,392],[644,390],
+      [639,388],[633,386],[628,383],[622,381],[617,379],[611,377],[605,374],[600,372],
+      [594,370],[589,368],[583,366],[577,364],[572,362],[566,360],[560,358],[555,356],
+      [549,355],[543,353],[537,351],[532,349],[526,347],[521,344],[516,341],[511,337],
+      [508,332],[508,326],[511,320],[515,316],[520,313],[525,310],[531,308],[536,305],
+      [542,303],[548,301],[553,300],[559,298],[565,296],[571,294],[576,293],[582,291],
+      [588,289],[594,287],[599,286],[605,284],[611,282],[617,281],[622,279],[628,277],
+      [634,276],[640,274],[646,273],[652,272],[657,270],[663,269],[669,268],[675,266],
+      [681,265],[687,264],[693,262],[698,261],[704,260],[710,258],[716,257],[722,256],
+      [728,254],[733,253],[739,251],[745,250],[751,248],[756,246],[762,244],[768,242],
+      [773,240],[779,238],[784,235],[790,233],[795,231],[801,228],[806,225],[812,223],
+      [817,220],[822,217],[827,214],[832,211],[837,207],[842,204],[847,200],[852,197],
+      [856,193],[861,189],[865,184],[869,180],[873,176],[878,171],[882,167]
     ] }
 ];
 const LV_INFO = [
-  { name: "Unspoken River", mapLabel: "Unspoken River", brief: "Solve 4 problems to swing over the gators!", winCap: "Here we go!", setup: "setup-l1-01c", win: "win-l1-01f", lose: "lose-l1-01b" },
-  { name: "Tangled Valley", mapLabel: "Tangled Valley", brief: "Solve 4 problems to break free of the boa!", winCap: "Slipped the serpent's grip!", setup: "setup-l2-02d", win: "win-l2-02d", lose: "lose-l2-02b" },
-  { name: "Forgotten Ridge", mapLabel: "Forgotten Ridge", brief: "Solve 4 problems to escape the jaguar!", winCap: "What a leap!", setup: "setup-l3", setupSfx: "sfx/setup-l3-03b.m4a", win: "win-l3-03d", lose: "lose-l3" },
-  { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to outrun the river guardians!", winCap: "Rescued at the rendezvous!", setup: "setup-l4-04b", setupSfx: "sfx/setup-l4-04b.m4a", win: "win-l4-04e", lose: "lose-l4-04c" }
+  { name: "Geyser Run", mapLabel: "Geyser Flats", brief: "Solve 4 problems to dodge the geysers!", winCap: "Geysers dodged!", setup: "setup-e1l1", setupSfx: "sfx/setup-e1l1.m4a", win: "win-e1l1", winSfx: "sfx/win-e1l1.m4a", lose: "lose-e1l1" },
+  { name: "Breaking Bridge", mapLabel: "Cliff Gorge", brief: "Solve 4 problems to cross the breaking bridge!", winCap: "Made it across!", setup: "setup-e1l2", setupSfx: "sfx/setup-e1l2.m4a", win: "win-e1l2", winSfx: "sfx/win-e1l2.m4a", lose: "lose-e1l2" },
+  { name: "Log Slide", mapLabel: "Waterfall Ridge", brief: "Solve 4 problems to dodge the tumbling logs!", winCap: "Dodged them all!", setup: "setup-e1l3", setupSfx: "sfx/setup-e1l3.m4a", win: "win-e1l3", winSfx: "sfx/win-e1l3.m4a", lose: "lose-e1l3" },
+  { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the boat before the volcano erupts!", winCap: "All aboard!", setup: "setup-e1l4", setupSfx: "sfx/setup-e1l4.m4a", win: "win-e1l4", winSfx: "sfx/win-e1l4.m4a", lose: "lose-e1l4" }
 ];
 const JUNGLE_PTS = EP_INFO[0].pts;
 const EP_LV = {
   1: [
-    { name: "Ghost Ferry", mapLabel: "Ghost Ferry", brief: "Solve 4 problems to pole past the hippos!", winCap: "Let's go!", setup: "setup-e2l1-05b", win: "win-e2l1-05d", lose: "lose-e2l1-05b" },
-    { name: "Needle Gap", mapLabel: "Needle Gap", brief: "Solve 4 problems to cross the gorge before the leopard!", winCap: "Gorge-ous escape!", setup: "setup-e2l2-06d", setupSfx: "sfx/setup-e2l2-06d.m4a", win: "win-e2l2-06e", winSfx: "sfx/win-e2l2-06e.m4a", lose: "lose-e2l2-06c" },
-    { name: "King's Crossing", mapLabel: "King's Crossing", brief: "Solve 4 problems to face down the lion!", winCap: "Long live Rex!", setup: "setup-e2l3-07b", setupSfx: "sfx/setup-e2l3-07b.m4a", win: "win-e2l3-07c", winSfx: "sfx/win-e2l3-07c.m4a", lose: "lose-e2l3" },
-    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to outrun the stampede!", winCap: "Rescued in the nick of time!", setup: "setup-e2l4-08c", setupSfx: "sfx/setup-e2l4-08c.m4a", win: "win-e2l4-08d", winSfx: "sfx/win-e2l4-08d.m4a", lose: "lose-e2l4", loseLay: "left" }
+    { name: "Flash Flood", mapLabel: "Canyon Floor", brief: "Solve 4 problems to outrun the flash flood!", winCap: "High and dry!", setup: "setup-e2l1", setupSfx: "sfx/setup-e2l1.m4a", win: "win-e2l1", winSfx: "sfx/win-e2l1.m4a", lose: "lose-e2l1" },
+    { name: "Dust Wall", mapLabel: "Dune Sea", brief: "Solve 4 problems to outlast the sandstorm!", winCap: "Storm survived!", setup: "setup-e2l2", setupSfx: "sfx/setup-e2l2.m4a", win: "win-e2l2", winSfx: "sfx/win-e2l2.m4a", lose: "lose-e2l2" },
+    { name: "Broken Ledge", mapLabel: "Mesa Ledge", brief: "Solve 4 problems to leap the crumbling ledge!", winCap: "Up and over!", setup: "setup-e2l3", setupSfx: "sfx/setup-e2l3.m4a", win: "win-e2l3", winSfx: "sfx/win-e2l3.m4a", lose: "lose-e2l3" },
+    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the jeep through the boulders!", winCap: "Rescued in the nick of time!", setup: "setup-e2l4", setupSfx: "sfx/setup-e2l4.m4a", win: "win-e2l4", winSfx: "sfx/win-e2l4.m4a", lose: "lose-e2l4" }
   ],
   2: [
-    { name: "Razorback Ridge", mapLabel: "Razorback Ridge", brief: "Solve 4 problems to scramble up the scree!", winCap: "Summit claimed, time for some crafts...", setup: "setup-e3l1-09b", win: "win-e3l1-09b", lose: "lose-e3l1-09b", loseLay: "mount" },
-    { name: "White Shroud", mapLabel: "White Shroud", brief: "Solve 4 problems to outrun the avalanche!", winCap: "Woohoo!", setup: "setup-e3l2-10b", setupSfx: "sfx/setup-e3l2-10b.m4a", win: "win-e3l2-10d", winSfx: "sfx/win-e3l2-10d.m4a", lose: "lose-e3l2" },
-    { name: "Widow's Camp", mapLabel: "Widow's Camp", brief: "Solve 4 problems to get that fire lit!", winCap: "Not today, Big Bad Wolf, not today!", setup: "setup-e3l3-11b", setupSfx: "sfx/setup-e3l3-11b.m4a", win: "win-e3l3-11b", winSfx: "sfx/win-e3l3-11b.m4a", lose: "lose-e3l3-11b", loseSplit: true },
-    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the rescue helicopter!", winCap: "You've done it — way to go!", setup: "setup-e3l4-12f", setupSfx: "sfx/setup-e3l4-12f.m4a", win: "win-e3l4-12b", winSfx: "sfx/win-e3l4-12b.m4a", lose: "lose-e3l4-12b", loseSplit: true }
+    { name: "Crumbling Stairs", mapLabel: "Sinkhole Edge", brief: "Solve 4 problems to climb the crumbling stairs!", winCap: "Top of the stairs!", setup: "setup-e3l1", setupSfx: "sfx/setup-e3l1.m4a", win: "win-e3l1", winSfx: "sfx/win-e3l1.m4a", lose: "lose-e3l1" },
+    { name: "Stone Wheel", mapLabel: "River Bend", brief: "Solve 4 problems to outrun the rolling stone wheel!", winCap: "Not today, stone wheel!", setup: "setup-e3l2", setupSfx: "sfx/setup-e3l2.m4a", win: "win-e3l2", winSfx: "sfx/win-e3l2.m4a", lose: "lose-e3l2" },
+    { name: "Flooded Passage", mapLabel: "Temple Steps", brief: "Solve 4 problems to cross the flooding passage!", winCap: "Through the flood!", setup: "setup-e3l3", setupSfx: "sfx/setup-e3l3.m4a", win: "win-e3l3", winSfx: "sfx/win-e3l3.m4a", lose: "lose-e3l3" },
+    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the rescue helicopter!", winCap: "You've done it — way to go!", setup: "setup-e3l4", setupSfx: "sfx/setup-e3l4.m4a", win: "win-e3l4", winSfx: "sfx/win-e3l4.m4a", lose: "lose-e3l4" }
   ]
 };
 const LVS = ep => EP_LV[ep] || LV_INFO;
@@ -3203,7 +2675,7 @@ const Cine = (() => {
         ? '<div class="tplayer tguest">Playing as a guest — scores stay on this device until you sign in.</div>'
         : '<div class="tplayer">Playing as <b>' + escH(Progress.cur.name) + '</b> <button data-cine="switch">' + (Progress.mode === "cloud" ? "Sign out" : "Switch player") + "</button></div>";
       const saveBtn = guestCloud ? '<button class="tsave" data-cine="signin">Sign in to save your scores</button>' : "";
-      show('<div class="cscreen title rx"><div class="tbgblur" style="background-image:url(\'' + ASSET("title-rex.jpg") + '\')"></div><img class="hero" src="' + ASSET("title-rex.jpg") + '" alt=""><div class="tgrad"></div><div class="tbox"><div class="tlogo"><span class="tl1">MAN <span>vs.</span></span><span class="tl2">MATH</span></div><div class="tsub">Surviving Long Division</div>' + who + '<div class="tbtns">' + btns + saveBtn + '</div><div class="tnote">Best with sound on 🔊<br><span style="opacity:.8;font-size:.82em">No sound? Turn off the iPad silent switch.</span></div></div></div>');
+      show('<div class="cscreen title rx"><div class="tbgblur" style="background-image:url(\'' + ASSET("title-rex.jpg") + '\')"></div><img class="hero" src="' + ASSET("title-rex.jpg") + '" alt=""><div class="tgrad"></div><div class="tbox"><div class="tlogo"><span class="tl1">MAN <span>vs.</span></span><span class="tl2">MATH</span></div><div class="tsub">Multiplication Madness</div>' + who + '<div class="tbtns">' + btns + saveBtn + '</div><div class="tnote">Best with sound on 🔊<br><span style="opacity:.8;font-size:.82em">No sound? Turn off the iPad silent switch.</span></div></div></div>');
       let go = false;
       onBtn = (k, b) => {
         if ((k === "switch" || k === "signin") && !go) { go = true; res(k); return; }
@@ -3281,7 +2753,7 @@ const Cine = (() => {
       const choice = !!(mo && mo.choice);
       const showSave = !!(mo && mo.showSave);
       const E = EP_INFO[ep] || EP_INFO[0], L = LVI(ep, lv);
-      const MAP_PTS = E.pts || JUNGLE_PTS, mapImg = E.map || "map-jungle-wide", labs = E.lab || [];
+      const MAP_PTS = E.pts || JUNGLE_PTS, mapImg = E.map || "map-volcano-wide", labs = E.lab || [];
       const PATH = E.path || MAP_PTS;
       const levels = LVS(ep);
       const soon = E.mapSoon !== undefined ? (L.placeholder ? E.mapSoon : "") : E.soon;
@@ -3363,7 +2835,7 @@ const Cine = (() => {
       render(false);
       onTap = () => { Ambience.ensureAC(); if (fin) return; if (i < dots.length) { timers.forEach(clearTimeout); timers = []; dots.forEach(d => d.classList.add("on")); i = dots.length; arrive(); } else finish(); };
       onSkip = () => done("continue");
-      onBtn = (k, b) => { if (k === "sdlong" || k === "sdshort") { const want = k === "sdshort"; if (want !== SD.on) { sdSet(want); SFX.step(); } root.querySelectorAll(".msdsw .sdopt").forEach(x => { const on = (x.dataset.cine === "sdshort") === SD.on; x.classList.toggle("sel", on); x.setAttribute("aria-checked", on ? "true" : "false"); }); return; } if (k === "lb") { openBoard(); return; } if (k === "mcont") { SFX.step(); done("continue"); } if (k === "msave") { SFX.step(); done("save"); } };
+      onBtn = (k, b) => { if (k === "lb") { openBoard(); return; } if (k === "mcont") { SFX.step(); done("continue"); } if (k === "msave") { SFX.step(); done("save"); } };
     });
   }
   function clip(name, opts) {
@@ -3810,7 +3282,7 @@ function mergeRecs(acct, guest) {
 }
 
 /* ---- storage adapter: localStorage (default, and guest play) ---- */
-const LK = { players: "mvm.players.v1", events: "mvm.events.v1", pin: "mvm.teacherPin.v1", guest: "mvm.guest.v1" };
+const LK = { players: "mm.players.v1", events: "mm.events.v1", pin: "mm.teacherPin.v1", guest: "mm.guest.v1" };
 const lget = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
 const lset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const LocalDB = {
@@ -3884,7 +3356,7 @@ function CloudDB() {
     // public scoreboard, live
     watchBoard() {
       if (lbUnsub) lbUnsub();
-      lbUnsub = S.onSnapshot(S.query(S.collection(db, "leaderboard"), S.where("hidden", "==", false), S.limit(1000)), snap => {
+      lbUnsub = S.onSnapshot(S.query(S.collection(db, "mm_leaderboard"), S.where("hidden", "==", false), S.limit(1000)), snap => {
         const b = {}; snap.forEach(d => { const v = d.data(); b[d.id] = { uid: d.id, name: v.modName || v.name, levels: v.levels || 0, furthest: v.furthest || 1, done: !!v.done, ts: v.ts || 0, stars: v.stars || {}, total: v.total || 0, reach: v.reach || v.ts || 0 }; });
         C.board = b; boardSubs.forEach(cb => { try { cb(b); } catch (e) {} });
       }, e => console.warn("scoreboard listener", e));
@@ -3895,8 +3367,8 @@ function CloudDB() {
     async signUp(username, password, nick) {
       const cred = await A.createUserWithEmailAndPassword(auth, userEmail(username), password);
       const now = Date.now(), rec = { username: normUser(username), name: cleanNick(nick), episode: 0, level: 0, strength: 100, unlocked: 1, passed: {}, done: false, ts: now, created: now };
-      await S.setDoc(S.doc(db, "users", cred.user.uid), rec);
-      await S.setDoc(S.doc(db, "leaderboard", cred.user.uid), Object.assign(C.entryOf(rec), { hidden: false, modName: null }));
+      await S.setDoc(S.doc(db, "mm_users", cred.user.uid), rec);
+      await S.setDoc(S.doc(db, "mm_leaderboard", cred.user.uid), Object.assign(C.entryOf(rec), { hidden: false, modName: null }));
       C.teacher = false;
     },
     async signIn(username, password) { await A.signInWithEmailAndPassword(auth, userEmail(username), password); C.teacher = await C.checkTeacher(); },
@@ -3904,8 +3376,8 @@ function CloudDB() {
     async checkTeacher() { const u = auth.currentUser; if (!u) return false; try { return (await S.getDoc(S.doc(db, "admins", u.uid))).exists(); } catch (e) { return false; } },
     async loadMine() {
       const u = auth.currentUser; if (!u) return null;
-      let s; try { s = await S.getDoc(S.doc(db, "users", u.uid)); } catch (e) { s = null; }
-      const cached = lget("mvm.acct.v1", null), mine = cached && cached.uid === u.uid ? cached.rec : null;
+      let s; try { s = await S.getDoc(S.doc(db, "mm_users", u.uid)); } catch (e) { s = null; }
+      const cached = lget("mm.acct.v1", null), mine = cached && cached.uid === u.uid ? cached.rec : null;
       let r = s && s.exists() ? s.data() : null;
       if (mine && (!r || (mine.ts || 0) > (r.ts || 0))) r = Object.assign({}, r || {}, mine); // offline save newer than the server copy
       return r ? Object.assign(r, { id: u.uid, passed: r.passed || {} }) : null;
@@ -3919,28 +3391,28 @@ function CloudDB() {
     // Saves are queued by Firestore while offline and sent when the connection comes back.
     async saveMine(r) {
       const u = auth.currentUser; if (!u) throw new Error("not signed in");
-      const p = C.progOf(r); lset("mvm.acct.v1", { uid: u.uid, rec: p });
-      const w1 = S.setDoc(S.doc(db, "users", u.uid), p);
-      const ref = S.doc(db, "leaderboard", u.uid);
+      const p = C.progOf(r); lset("mm.acct.v1", { uid: u.uid, rec: p });
+      const w1 = S.setDoc(S.doc(db, "mm_users", u.uid), p);
+      const ref = S.doc(db, "mm_leaderboard", u.uid);
       const w2 = S.setDoc(ref, C.entryOf(p), { merge: true }).catch(e => /permission/.test((e && e.code) || "") ? S.setDoc(ref, Object.assign(C.entryOf(p), { hidden: false, modName: null })) : Promise.reject(e));
       await Promise.all([w1, w2]);
-      const c = lget("mvm.acct.v1", null); if (c && c.uid === u.uid && c.rec.ts === p.ts) localStorage.removeItem("mvm.acct.v1");
+      const c = lget("mm.acct.v1", null); if (c && c.uid === u.uid && c.rec.ts === p.ts) localStorage.removeItem("mm.acct.v1");
     },
-    async pushEvent(ev) { const u = auth.currentUser; if (!u) return; await S.addDoc(S.collection(db, "events"), { uid: u.uid, ep: ev.ep, lv: ev.lv, ts: ev.ts }); },
+    async pushEvent(ev) { const u = auth.currentUser; if (!u) return; await S.addDoc(S.collection(db, "mm_events"), { uid: u.uid, ep: ev.ep, lv: ev.lv, ts: ev.ts }); },
     onEvent(since, cb) {
-      return S.onSnapshot(S.query(S.collection(db, "events"), S.where("ts", ">", since)), snap => {
+      return S.onSnapshot(S.query(S.collection(db, "mm_events"), S.where("ts", ">", since)), snap => {
         snap.docChanges().forEach(ch => { if (ch.type !== "added") return; const v = ch.doc.data(), who = C.board[v.uid]; if (who) cb({ name: who.name, ep: v.ep, lv: v.lv, ts: v.ts }); });
       }, () => {});
     },
     // teacher (account listed in admins/{uid})
     async teacherData() {
-      const [lb, us] = await Promise.all([S.getDocs(S.collection(db, "leaderboard")), S.getDocs(S.collection(db, "users"))]);
+      const [lb, us] = await Promise.all([S.getDocs(S.collection(db, "mm_leaderboard")), S.getDocs(S.collection(db, "mm_users"))]);
       const rows = {}; us.forEach(d => { rows[d.id] = Object.assign({ uid: d.id }, d.data()); });
       lb.forEach(d => { rows[d.id] = Object.assign(rows[d.id] || { uid: d.id, username: "" }, { entry: d.data() }); });
       return rows;
     },
-    async setMod(uid, patch) { await S.updateDoc(S.doc(db, "leaderboard", uid), patch); },
-    async removeStudent(uid) { await Promise.all([S.deleteDoc(S.doc(db, "leaderboard", uid)), S.deleteDoc(S.doc(db, "users", uid))]); },
+    async setMod(uid, patch) { await S.updateDoc(S.doc(db, "mm_leaderboard", uid), patch); },
+    async removeStudent(uid) { await Promise.all([S.deleteDoc(S.doc(db, "mm_leaderboard", uid)), S.deleteDoc(S.doc(db, "mm_users", uid))]); },
     // Teacher reset of one student's progress. Keeps username, name, password (Auth) and created date.
     // Current published rules reject this write (teachers can only delete, or change hidden/modName). Once
     // the proposed rules are published, this succeeds; until then the teacher sees a clear error.
@@ -3950,8 +3422,8 @@ function CloudDB() {
       const entry = C.entryOf(rec);
       if (row.entry) { entry.name = row.entry.name || entry.name; entry.hidden = !!row.entry.hidden; entry.modName = row.entry.modName == null ? null : row.entry.modName; }
       try {
-        await S.setDoc(S.doc(db, "users", row.uid), rec);
-        if (row.entry) await S.setDoc(S.doc(db, "leaderboard", row.uid), entry);
+        await S.setDoc(S.doc(db, "mm_users", row.uid), rec);
+        if (row.entry) await S.setDoc(S.doc(db, "mm_leaderboard", row.uid), entry);
       } catch (e) {
         if (/permission/i.test((e && (e.code || e.message)) || "")) throw new Error("Reset score for online accounts isn't allowed by the current Firestore rules yet. For now, use Remove (they can sign in and start over), or Hide their name on the board.");
         throw e;
@@ -4119,7 +3591,7 @@ const reachTxt = r => r.done ? "All 3 episodes 🏆" : "Episode " + ((r.episode 
 /* ---- star scoreboard (public when accounts are on; display names only) ---- */
 const STAR_PATH = '<path d="M12 2.8l2.75 5.9 6.45.75-4.8 4.4 1.35 6.35L12 16.95 6.25 20.2l1.35-6.35-4.8-4.4 6.45-.75z"/>';
 const starSvg = lit => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (lit ? ' class="lit"' : "") + ">" + STAR_PATH + "</svg>";
-const EP_SHORT = ["Jungle", "Savanna", "Mountain"];
+const EP_SHORT = ["Volcano", "Canyon", "Temple"];
 const rowOfRec = r => ({ uid: r.id, name: r.name, levels: passedCount(r), stars: cleanStars(r), total: starTotal(r), reach: reachOf(r) });
 function boardRows(players) {
   let list;
@@ -4174,7 +3646,7 @@ function showBoard(o) {
           '<td class="sbtot"><div class="tbx" aria-label="' + r.total + ' stars in all">' + r.total + starSvg(true) + "</div></td></tr>";
       }).join("") : '<tr><td colspan="15"><div class="sbempty">No explorers yet — be the first!</div></td></tr>';
       const sc = el.querySelector(".sbscroll"), keep = sc ? [sc.scrollLeft, sc.scrollTop] : null;
-      el.innerHTML = '<div class="sbbg" style="background-image:url(\'' + ASSET((E.map || "map-jungle-wide") + ".jpg") + '\')"></div><div class="sbwrap"><div class="sbhead"><div class="sbtitle">🏆 Star Scoreboard</div><div class="sbsub">' +
+      el.innerHTML = '<div class="sbbg" style="background-image:url(\'' + ASSET((E.map || "map-volcano-wide") + ".jpg") + '\')"></div><div class="sbwrap"><div class="sbhead"><div class="sbtitle">🏆 Star Scoreboard</div><div class="sbsub">' +
         (cloudMode() ? "Everyone can see this board · scoreboard names only" : "Most levels passed, then most stars") + "</div></div>" + cue() +
         '<div class="sbscroll"><table class="sbt"><thead>' + head1 + head2 + "</thead><tbody>" + body + '</tbody></table></div><div class="sbfoot"><button class="sbgo cprimary" data-sb="go">Continue ▶</button><span class="sbhint">or press any key</span></div></div>';
       el.dataset.drawn = "1";
@@ -4245,7 +3717,7 @@ function pwDialog(o) {
 let pgHandler = null;
 document.getElementById("cine").addEventListener("click", e => { const b = e.target.closest("[data-pg]"); if (b && pgHandler) pgHandler(b.dataset.pg, b, e); });
 const loginShell = (left, right) => '<div class="cscreen login"><img class="hero" src="' + ASSET("title-hero.jpg") + '" alt=""><div class="tgrad"></div><div class="lgwrap">' +
-  '<div class="lghead"><div class="tlogo sm">MAN <span>vs.</span> MATH</div><div class="tsub">Surviving Long Division</div></div>' +
+  '<div class="lghead"><div class="tlogo sm">MAN <span>vs.</span> MATH</div><div class="tsub">Multiplication Madness</div></div>' +
   '<div class="lgcols">' + left + '<div class="lgcard lb" id="lbbox">' + right + "</div></div></div>" +
   '<button class="lgteach" data-pg="teacher">Teacher</button></div>';
 async function loginScreen() {
@@ -4522,29 +3994,24 @@ window.__MVM_AUTH = { checkUsername, checkNick, checkAccountName, prettyAccountN
 
 
 /* ================= dev tools (?dev=1) ================= */
+function nextMove(P) {
+  switch (P.phase) {
+    case "pick": return ["pick", P.k];
+    case "needStep": return ["step", P.expect];
+    case "mult": return ["digit", P.an.rows[P.k].steps[P.idx].val];
+    case "sum": return ["digit", P.an.sum[P.sidx].val];
+  }
+  return null;
+}
 async function devSolve() {
   if (!G.P || G.overlay) return "not playing";
   startProblem();
-  const P = G.P, A = P.A, w = ms => new Promise(r => setTimeout(r, ms));
-  const go = async (a, b) => { lockUntil = 0; act(a, b); await w(ANIM ? 60 : 8); };
-  await go("place", A.p);
-  for (let k = 0; k < A.cycles.length; k++) {
-    const C = A.cycles[k];
-    if (k > 0) await go("step", "divide");
-    await go("digit", C.q); await go("step", "multiply");
-    for (const st of mulSteps(C.q, P.d)) await go("digit", st.val);
-    await w(ANIM ? 800 : 20); await go("step", "subtract");
-    for (let guard = 0; guard < 40 && G.P === P && P.phase === "subtract"; guard++) {
-      const s = P.cycles[k].sub, col = s.col, bb = s.B[col] || 0;
-      if (s.work[col] < bb) { if (leadingOneBorrow(s, col)) await go("digit", s.work[col] + 10 - bb); else await go("top", col + 1); }
-      else await go("digit", s.work[col] - bb);
-    }
-    await go("step", "compare"); await go("yes");
-    if (k < A.cycles.length - 1) { await go("step", "bring"); await w(ANIM ? 600 : 20); }
+  const P = G.P, w = ms => new Promise(r => setTimeout(r, ms));
+  for (let guard = 0; guard < 600 && G.P === P && P.phase !== "complete" && P.phase !== "over"; guard++) {
+    const mv = nextMove(P); if (!mv) break;
+    lockUntil = 0; act(mv[0], mv[1]); await w(ANIM ? 25 : 4);
   }
-  if (A.remainder > 0) { await go("remainder"); for (const ch of String(A.remainder)) await go("digit", +ch); }
-  else await go("done");
-  return "solved " + P.D + "/" + P.d;
+  return "solved " + P.A + "x" + P.B;
 }
 if (DEV) {
   const mapQ = new URLSearchParams(location.search).get("map");
@@ -4588,7 +4055,7 @@ if (DEV) {
 }
 
 /* ================= boot ================= */
-G.problems = genLevel(0); startProblem(); G.overlay = { type: "cine" }; render();
+G.problems = genLevel(0, 0); startProblem(); G.overlay = { type: "cine" }; render();
 runTitle();
 const startMediaPreload = () => { if (startMediaPreload.done) return; startMediaPreload.done = true; try { preloadBoot(); } catch (e) {} try { RecAudio.prefetch(); } catch (e) {} try { Music.prerender(); } catch (e) {} };
 dbReady.then(startMediaPreload).catch(() => {});
@@ -4608,8 +4075,8 @@ try { const sp = parseFloat(new URLSearchParams(location.search).get("timerSpeed
 
 window.showStrengthBoost = showStrengthBoost;
 window.__MVM = { G, Cine, Music, RecAudio, get AC() { return AC; }, beginLevel, winLevel, loseFlow, timeUp, runTitle, devSolve, store, TUNE, LV_INFO, EP_INFO, LVS, Progress, normName, rosterCsv, openBoard, get DB() { return DB; }, timerRunning, unlocked, setAnim: v => { ANIM = v; }, cancelFlows: () => ++flowTok, teacherScreen, teacherCloudScreen, teacherJumpPanel };
-window.__DD = { SD, sdSet, Cine, go(ep, lv) { flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; newLevel(lv || 0, false); }, G, EPISODES, penalty: () => penalty(), render: () => render(), setTimeScale: v => { G.timeScale = v; }, act, analyze, mulSteps, genLevel, newLevel, LEVELS, setAnim: v => { ANIM = v; }, setLock: () => { lockUntil = 0; },
-  loadProblem(D, d) { G.overlay = null; G.problems[G.probIdx] = { D: String(D), d }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, expect: P.expect, cur: P.cur, lives: G.strength, strength: G.strength, pens: P.pens, msg: P.msg, nudgeK: P.nudgeK, cycles: P.cycles.map(c => ({ pos: c.pos, top: c.topStr, q: c.q, prevQ: c.prevQ, diff: c.diff, sub: c.sub && { col: c.sub.col, work: c.sub.work.slice(), written: c.sub.written.slice(), impossible: c.sub.impossible }, mulIdx: c.mul && c.mul.idx })) }; } };
+window.__DD = { Cine, go(ep, lv) { flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; newLevel(lv || 0, false); }, G, EPISODES, penalty: () => penalty(), render: () => render(), setTimeScale: v => { G.timeScale = v; }, act, analyze, genLevel, newLevel, LEVELS, LEVELS_EP, nextMove, setAnim: v => { ANIM = v; }, setLock: () => { lockUntil = 0; },
+  loadProblem(A, B) { G.overlay = null; G.problems[G.probIdx] = { A: String(A), B: String(B) }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, expect: P.expect, k: P.k, idx: P.idx, sidx: P.sidx, strength: G.strength, pens: P.pens, msg: P.msg, A: P.A, B: P.B, product: P.an.product, final: P.final, prod: P.prod }; } };
 })();
 </script>
 <script>

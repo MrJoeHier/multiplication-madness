@@ -1,7 +1,7 @@
 {
-  "name": "Man vs. Math",
-  "short_name": "Man vs. Math",
-  "description": "Surviving Long Division",
+  "name": "Man vs. Math: Multiplication Madness",
+  "short_name": "Mult. Madness",
+  "description": "Multiplication Madness",
   "id": "./",
   "start_url": "./",
   "scope": "./",

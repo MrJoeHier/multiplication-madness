@@ -20,3 +20,7 @@ Base: copy of division-dash main a3b2a93 index.html (4623 lines) -> being rewrit
 - [x] 3 maps in assets/map-{volcano,canyon,temple}-wide.jpg/webp; routes in BUILD-routes.json (mapwork/routes_final.json); check portrait map usage in index (map-jungle.jpg non-wide)
 - [x] win/setup mp4+posters encoded (24 files each ok), lose stills, maps, title-rex/title-hero/ep1-3-rex(+blink) NEW art in assets (2026-11-25)
 - NEXT: narration, sfx, index.html rewrite
+- [x] narration ep1-3 mp3 in assets/narration; LINES js at /workspace/mm-build/narr/lines.js (build_narr.py)
+- [x] SFX m4a x24 in assets/sfx (sfx work: /workspace/mm-build/sfx gen_cues.py, make_sfx.py)
+- NEXT: index.html rewrite (engine lines 1274-2450 of orig). map ambience: modify Ambience ep===2 to temple
+- [x] index.html core rewrite applied (levels, engine, render, input, EP_INFO, LV_INFO, narration lines); NEXT: run in browser (Playwright), fix errors; backups: /workspace/mm-build/patch/*.js, index.orig.html

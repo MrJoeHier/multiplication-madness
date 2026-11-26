@@ -1,9 +1,12 @@
 rules_version = '2';
-// Man vs. Math: Firestore security rules (paste into Firebase console → Firestore Database → Rules → Publish).
-//   users/{uid}        private progress: only that student (and a teacher) can read; only that student can write
-//   leaderboard/{uid}  public scoreboard: anyone can read rows that aren't hidden; only nickname + scores are stored
-//   events/{id}        "passed a level" alerts for signed-in players (no names stored)
-//   admins/{uid}       teacher accounts: added by hand in the console, never writable from the game
+// Man vs. Math (all games) — Firestore security rules. Paste into Firebase console -> Firestore Database -> Rules -> Publish.
+// This file = the rules ALREADY PUBLISHED for Surviving Long Division (users / leaderboard / events / admins, unchanged)
+// PLUS the same three collections for Multiplication Madness under their own names:
+//   mm_users/{uid}        private progress (same shape and checks as users)
+//   mm_leaderboard/{uid}  public scoreboard rows (same shape and checks as leaderboard)
+//   mm_events/{id}        "passed a level" alerts
+//   admins/{uid}          shared teacher accounts (same list for both games)
+// Students keep one login for both games (username@mvm.local); each game keeps its own progress and scoreboard.
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
@@ -65,6 +68,35 @@ service cloud.firestore {
     }
 
     match /events/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasAll(['uid', 'ep', 'lv', 'ts']) && request.resource.data.keys().hasOnly(['uid', 'ep', 'lv', 'ts'])
+        && okInt(request.resource.data.ep, 0, 2) && okInt(request.resource.data.lv, 0, 3) && request.resource.data.ts is int;
+      allow delete: if isTeacher();
+    }
+
+
+    // ---- Multiplication Madness (same rules, separate collections) ----
+    match /mm_users/{uid} {
+      allow get: if isMe(uid) || isTeacher();
+      allow list: if isTeacher();
+      allow create: if isMe(uid) && okProgress(request.resource.data);
+      allow update: if isMe(uid) && okProgress(request.resource.data) && request.resource.data.username == resource.data.username;
+      allow delete: if isTeacher();
+    }
+
+    match /mm_leaderboard/{uid} {
+      allow get: if isMe(uid) || isTeacher() || resource.data.hidden == false;
+      allow list: if isTeacher() || resource.data.hidden == false;
+      allow create: if isMe(uid) && okEntry(request.resource.data)
+        && request.resource.data.hidden == false && request.resource.data.modName == null;
+      allow update: if okEntry(request.resource.data) && (
+        (isMe(uid) && request.resource.data.hidden == resource.data.hidden && request.resource.data.modName == resource.data.modName)
+        || (isTeacher() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden', 'modName'])));
+      allow delete: if isTeacher();
+    }
+
+    match /mm_events/{id} {
       allow read: if signedIn();
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasAll(['uid', 'ep', 'lv', 'ts']) && request.resource.data.keys().hasOnly(['uid', 'ep', 'lv', 'ts'])

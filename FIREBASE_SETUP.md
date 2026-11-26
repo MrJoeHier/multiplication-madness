@@ -1,3 +1,31 @@
+# Multiplication Madness — Firebase notes (READ THIS FIRST)
+
+Multiplication Madness reuses the **same Firebase project as Surviving Long Division** (`man-vs-math`): the same
+Authentication users (a student signs in with the same name and password in both games) and the same teacher list
+(`admins`). Each game keeps its own progress and scoreboard in its own collections:
+
+| Game | Collections |
+|---|---|
+| Surviving Long Division | `users`, `leaderboard`, `events` |
+| Multiplication Madness | `mm_users`, `mm_leaderboard`, `mm_events` |
+| both | `admins` (teacher accounts) |
+
+**One step for Joe (about 2 minutes):** open Firebase console → Firestore Database → Rules, paste the whole of
+`firebase/firestore.rules` from this repo (it contains the rules already published for the first game, unchanged,
+plus the same rules for the three `mm_` collections) and press **Publish**.
+
+Until that is published the game still works: guests and signed-in students save on their device, the scoreboard
+simply shows nothing, and the console logs "Missing or insufficient permissions". Nothing breaks and nothing is lost —
+saves made while blocked are kept on the device and sent to the cloud after the rules are published.
+
+A student who already has an account from Surviving Long Division just signs in with the same name and password;
+the first sign-in creates their Multiplication Madness progress record. "Create account" with a name that already
+exists in the first game will say the name is taken; they should sign in instead.
+
+The rest of this file is the original setup guide (project creation, config, teacher accounts) and still applies.
+
+---
+
 # Student accounts and the public scoreboard (Firebase)
 
 Out of the box, **Man vs. Math** saves everything in the browser (`localStorage`) on each device, and students type
