@@ -43,6 +43,13 @@ There are no step or operator buttons. The only controls in the math phase are t
 3. The first partial product sits directly under the multiplication line. Column carries for the sum appear the same way, as
    small boxes tucked above the next column.
 
+**Repeated digit shortcut (drag to copy):** when the current row's multiplier digit equals one already finished (e.g. 123 × 77), a
+long-press (~400 ms, touch or mouse) on that earlier row lifts a ghost copy of its digits; drop it on the current row. With all
+the 0 placeholders typed, the digits snap into place (chime + shimmer) and the cursor moves on, no carries needed. Without them
+the ghost bounces to the ones place and it counts as a mistake (-10%, "Type the 0 placeholder first, then drag it over."). Dropping
+anywhere else cancels with no penalty. There is no visual hint on the problem itself, only a tip in the prompt. Typing the row by
+hand (with carries) still works exactly as before.
+
 A wrong number tile = -10% strength and a shake. Stars: no mistakes = 3, up to 2 = 2, more = 1.
 
 ## Adventures
