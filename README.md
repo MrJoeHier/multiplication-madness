@@ -5,31 +5,45 @@ Rex Ranger. 7th-grade multi-digit multiplication, 3 episodes × 4 levels, played
 
 Live: <https://mrjoehier.github.io/multiplication-madness/>
 
-## Levels (top number × bottom number; the bottom number sets how many rows of work)
+## Levels (every level has 4 problems, freshly randomized each time)
 
-| Episode | Setting | Time per problem | L1 | L2 | L3 | L4 (2 problems) |
-|---|---|---|---|---|---|---|
-| 1 | The Volcano | 3:00 | 2×2 digits | 2×3 | 2×4 | 2×5 |
-| 2 | The Canyon | 4:00 | 3×3 | 3×4 | 3×5 | 3×6 |
-| 3 | The Temple | 5:00 | 4×4 | 4×5 | 4×6 | 4×7 |
+Shapes are bottom × top digits. **S / M / L** sizes per episode:
 
-Levels 1–3 have four problems, Level 4 has two. Strength starts at 100%, drops 10% per mistake, +30% after each
-level, back to 100% after an episode. Out of strength = restart the episode; out of time = retry the level.
+| Episode | Setting | Time per problem | S | M | L |
+|---|---|---|---|---|---|
+| 1 | The Volcano | 2:00 | 2×2 | 2×3 | 2×4 |
+| 2 | The Canyon | 2:30 | 3×3 | 3×4 | 4×4 |
+| 3 | The Temple (decimals) | 2:00 | 3×3 | 3×4 | 4×4 |
 
-## The multiplication scaffold (click a blank, then tap numbers)
+- **Level 1:** four S.
+- **Level 2:** problem 1 is M, one more M at a random spot (2–4), the other two S.
+- **Level 3:** problem 1 is L, one more L at a random spot (2–4), the other two M.
+- **Level 4:** three L and one M (the M lands anywhere, 1–4).
 
-There are no step or operator buttons. The only controls in the math phase are the number tiles 0-9 under the page.
+Strength starts at 100%, drops 10% per mistake, +30% after each level, back to 100% after an episode. Out of strength =
+restart the episode; out of time = retry the level.
 
-1. **Click the rightmost empty blank of a row once** (ones place), then tap number tiles: the cursor moves left by itself.
-   Placeholder zeros are ordinary blanks (click, tap **0**). Factor digits are not clickable.
+## Episode 3: decimals
+
+Factors may carry a decimal point (at least one per problem; each factor keeps at least one digit before the point; digits stay
+right-aligned). The multiplication, carries and addition work exactly like whole numbers. After the sum row there is one last
+step: the player places the decimal point in the product by tapping the gap between two digits (keyboard: ← / → to move, "." or
+Enter to place). Correct = total decimal places of both factors, counted from the right. A wrong gap costs 10% strength with the
+hint "Count the decimal places in both factors."
+
+## The multiplication scaffold (no clicking needed, just tap or type numbers)
+
+There are no step or operator buttons. The only controls in the math phase are the number tiles 0-9 (or the keyboard).
+
+1. The cursor is already in the ones box of the first row; tap number tiles (or type) and it moves left by itself. Placeholder
+   zeros are ordinary boxes (tap **0**). Factor digits are not clickable.
 2. **Carries are written by the player, in small boxes on top.** When a carry is due, an empty carry box appears by itself above
-   the next top digit and the cursor jumps into it (no click). Tap the carry; the cursor goes back to the next digit by itself. A
-   row's last (leading) digit works the same way. The previous row's carries are wiped when the next row is started.
-3. When the last partial-product row is full, the answer row is next: click its rightmost blank once, then keep tapping. Column
-   carries appear the same way, in a small box above the next column (above the first partial product).
+   the next top digit and the cursor jumps into it. Tap the carry; the cursor goes back by itself. A row's last (leading) digit
+   works the same way. The previous row's carries are wiped when the next row is started.
+3. The first partial product sits directly under the multiplication line. Column carries for the sum appear the same way, as
+   small boxes tucked above the next column.
 
-Wrong number tile, a blank clicked out of order = -10% strength and a shake. Tapping a tile before placing the cursor is only a
-friendly reminder (no penalty). Stars: no mistakes = 3, up to 2 = 2, more = 1.
+A wrong number tile = -10% strength and a shake. Stars: no mistakes = 3, up to 2 = 2, more = 1.
 
 ## Adventures
 

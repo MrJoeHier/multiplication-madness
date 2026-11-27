@@ -1092,6 +1092,14 @@ body.ep-snow #board .cell.sidefac { color:#071c2e; font-weight:900; }
 .key.idle:not(:disabled) { opacity:.62; }
 .cell.blank.cblank { height:calc(var(--rh) * .54); }
 .cell.blank.cblank::after { left:18%; right:18%; top:8%; bottom:8%; }
+/* Decimal points: a small dot at the boundary after the digit that sits left of the point (factors and the finished product) */
+.cell .dp { position:absolute; right:calc(var(--dpd) / -2); bottom:calc(var(--rh) * .13); width:var(--dpd); height:var(--dpd); border-radius:50%; background:currentColor; z-index:3; pointer-events:none; box-shadow:0 0 0 1.5px var(--paper); }
+.cell.stone .dp { background:var(--ink); }
+/* Decimal step: gap markers between the product digits (tap / click, or arrow keys + "."). Each button spans one column, centred on the gap. */
+.decgap { position:absolute; width:var(--cw); height:var(--rh); z-index:4; background:none; border:0; padding:0 0 calc(var(--rh) * .1); margin:0; appearance:none; -webkit-appearance:none; cursor:pointer; display:flex; align-items:flex-end; justify-content:center; -webkit-tap-highlight-color:transparent; }
+.decgap::before { content:''; position:absolute; inset:-6px 0; }
+.decgap .gd { display:block; width:min(var(--dpd2), calc(var(--cw) * .42)); height:min(var(--dpd2), calc(var(--cw) * .42)); box-sizing:border-box; border:2.5px dashed var(--carry); border-radius:50%; background:rgba(255,248,226,.92); animation:slotPulse 1.3s ease-in-out infinite; }
+.decgap.sel .gd { border-style:solid; border-color:var(--accent); background:var(--accent-soft); animation:none; box-shadow:0 0 0 3px rgba(47,107,58,.25); }
 /* Addition carries: a small handwritten digit tucked under the multiplication line, over the column — not a reserved blank row. */
 .cell.carryc.sc, .cell.blank.cblank.sc { height:var(--scH, max(18px, calc(var(--rh) * .42))); font-size:max(13px, calc(var(--rh) * .38)); z-index:4; padding:0; align-items:center; }
 .cell.blank.cblank.sc::after { left:12%; right:12%; top:4%; bottom:4%; border-width:2px; border-radius:6px; }
@@ -1207,7 +1215,7 @@ body.sdsw-on.sdnote-on #work #prompt { padding-right:14px; padding-top:calc(var(
     <div class="brand"><span class="mvm">MAN <i>vs.</i> MATH</span> <small id="h-lvname">Geyser Run</small></div>
     <div class="chips">
       <div class="chip"><span id="h-level">E1 · L1</span></div>
-      <div class="pie timer" id="h-time" aria-label="Time left"><div class="wedge"></div><span class="tv">4:00</span></div>
+      <div class="pie timer" id="h-time" aria-label="Time left"><div class="wedge"></div><span class="tv">2:00</span></div>
       <div class="chip"><span class="lbl">Problem</span><span id="h-prob">1/5</span></div>
       <div class="chip meter" id="h-meter" aria-label="Strength"><span class="lbl">Strength</span><div class="meterbar"><div class="fillbar"></div></div><span class="pct">100%</span></div>
       <button class="icon-btn" id="btn-settings" aria-label="Settings">⚙︎</button>
@@ -1260,21 +1268,26 @@ document.documentElement.setAttribute("data-theme", settings.theme);
 let ANIM = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? 0.35 : 1;
 
 /* ================= levels ================= */
-/* shape = [bottom digits (rows of partial products), top digits]. Level 4 of every episode has two problems. */
-const LEVELS_EP = [
-  [{ name: "2 × 2 digits", desc: "2-digit × 2-digit", shapes: [[2, 2], [2, 2], [2, 2], [2, 2]] },
-   { name: "2 × 3 digits", desc: "2-digit × 3-digit", shapes: [[2, 3], [2, 3], [2, 3], [2, 3]] },
-   { name: "2 × 4 digits", desc: "2-digit × 4-digit", shapes: [[2, 4], [2, 4], [2, 4], [2, 4]] },
-   { name: "2 × 5 digits", desc: "2-digit × 5-digit", shapes: [[2, 5], [2, 5]] }],
-  [{ name: "3 × 3 digits", desc: "3-digit × 3-digit", shapes: [[3, 3], [3, 3], [3, 3], [3, 3]] },
-   { name: "3 × 4 digits", desc: "3-digit × 4-digit", shapes: [[3, 4], [3, 4], [3, 4], [3, 4]] },
-   { name: "3 × 5 digits", desc: "3-digit × 5-digit", shapes: [[3, 5], [3, 5], [3, 5], [3, 5]] },
-   { name: "3 × 6 digits", desc: "3-digit × 6-digit", shapes: [[3, 6], [3, 6]] }],
-  [{ name: "4 × 4 digits", desc: "4-digit × 4-digit", shapes: [[4, 4], [4, 4], [4, 4], [4, 4]] },
-   { name: "4 × 5 digits", desc: "4-digit × 5-digit", shapes: [[4, 5], [4, 5], [4, 5], [4, 5]] },
-   { name: "4 × 6 digits", desc: "4-digit × 6-digit", shapes: [[4, 6], [4, 6], [4, 6], [4, 6]] },
-   { name: "4 × 7 digits", desc: "4-digit × 7-digit", shapes: [[4, 7], [4, 7]] }]
-];
+/* shape = [m, n] = m-digit bottom factor (rows of partial products) x n-digit top factor. Every level has 4 problems, re-randomised each time a level is generated.
+   Sizes per episode: S / M / L. E1 S=[2,2] M=[2,3] L=[2,4]; E2 and E3 S=[3,3] M=[3,4] L=[4,4] (E3 adds decimal points: EPISODES[2].decimals).
+   L1: 4 S. L2: problem 1 is M, one more M at position 2-4, the other two S. L3: problem 1 is L, one more L at position 2-4, the other two M.
+   L4: three L and one M, the M at a random position (1-4). */
+const SIZES = [{ S: [2, 2], M: [2, 3], L: [2, 4] }, { S: [3, 3], M: [3, 4], L: [4, 4] }, { S: [3, 3], M: [3, 4], L: [4, 4] }];
+const shName = sh => sh[0] + " × " + sh[1], shDesc = sh => sh[0] + "-digit × " + sh[1] + "-digit";
+const levelNames = (z, dec) => { const t = dec ? " — decimals" : "", w = dec ? ", with decimal points" : ""; return [
+  { name: shName(z.S) + " digits" + t, desc: shDesc(z.S) + w },
+  { name: shName(z.M) + " and " + shName(z.S) + " digits" + t, desc: "two " + shDesc(z.M) + " and two " + shDesc(z.S) + w },
+  { name: shName(z.L) + " and " + shName(z.M) + " digits" + t, desc: "two " + shDesc(z.L) + " and two " + shDesc(z.M) + w },
+  { name: shName(z.L) + " and " + shName(z.M) + " digits (mostly " + shName(z.L) + ")" + t, desc: "three " + shDesc(z.L) + " and one " + shDesc(z.M) + w }]; };
+const LEVELS_EP = [0, 1, 2].map(ep => levelNames(SIZES[ep], ep === 2));
+/* fresh random problem sizes for one level: an array of 4 shapes in play order */
+function levelShapes(ep, lv) {
+  const z = SIZES[ep] || SIZES[0], pos = lo => ri(lo, 3); /* 0-based position 1..3 (problems 2-4) */
+  if (lv === 0) return [z.S, z.S, z.S, z.S];
+  if (lv === 1) { const a = [z.M, z.S, z.S, z.S]; a[pos(1)] = z.M; return a; }
+  if (lv === 2) { const a = [z.L, z.M, z.M, z.M]; a[pos(1)] = z.L; return a; }
+  const a = [z.L, z.L, z.L, z.L]; a[ri(0, 3)] = z.M; return a;
+}
 const LEVELS = LEVELS_EP[0]; /* four levels per episode (names/descriptions per episode: lvCfg) */
 const lvCfg = (ep, lv) => (LEVELS_EP[ep] || LEVELS_EP[0])[lv] || LEVELS_EP[0][0];
 const PLACES = ["ones", "tens", "hundreds", "thousands"];
@@ -1331,21 +1344,30 @@ function buildSeq(an) {
   return seq;
 }
 function genLevel(ep, l) {
-  const cfg = lvCfg(ep, l), out = [], seen = new Set();
-  cfg.shapes.forEach(([m, n]) => {
+  const out = [], seen = new Set(), dec = !!(EPISODES[ep] && EPISODES[ep].decimals);
+  levelShapes(ep, l).forEach(([m, n]) => {
     let pick = null;
-    for (let t = 0; t < 400 && !pick; t++) {
+    for (let t = 0; t < 800 && !pick; t++) {
       let B = ""; for (let i = 0; i < m; i++) B += ri(2, 9);
       let A = String(ri(1, 9)); for (let i = 1; i < n; i++) A += Math.random() < 0.15 ? 0 : ri(0, 9);
+      let dA = 0, dB = 0;
+      if (dec) {
+        A = A.slice(0, -1) + ri(1, 9); /* a decimal factor never ends in 0 */
+        const r = Math.random(); /* every problem has a decimal point; sometimes only one factor has one */
+        if (r < 0.45) { dA = ri(1, n - 1); dB = ri(1, m - 1); } else if (r < 0.75) dA = ri(1, n - 1); else dB = ri(1, m - 1);
+        if ((+A * +B) % 10 === 0) continue; /* no trailing zero in the decimal product */
+      }
       if (new Set(A.split("")).size < 2) continue;
-      const key = A + "x" + B; if (seen.has(key)) continue;
-      pick = { A, B };
+      const key = A + "x" + B + "d" + dA + "." + dB; if (seen.has(key)) continue;
+      pick = { A, B, dA, dB };
     }
-    if (!pick) pick = { A: "1" + "7".repeat(n - 1), B: "9".repeat(m) };
-    seen.add(pick.A + "x" + pick.B); out.push(pick);
+    if (!pick) pick = { A: "1" + "7".repeat(n - 1), B: "9".repeat(m), dA: dec ? 1 : 0, dB: 0 };
+    seen.add(pick.A + "x" + pick.B + "d" + pick.dA + "." + pick.dB); out.push(pick);
   });
   return out;
 }
+/* digits with the decimal point put in; every decimal factor keeps 1+ digits before the point */
+const withPoint = (digits, d) => d > 0 ? digits.slice(0, digits.length - d) + "." + digits.slice(digits.length - d) : digits;
 
 /* ================= audio + haptics ================= */
 let AC = null, master = null;
@@ -1530,7 +1552,7 @@ const canVibrate = typeof navigator !== "undefined" && typeof navigator.vibrate 
 function haptic(p) { if (settings.haptics && canVibrate) { try { navigator.vibrate(p); } catch (e) {} } }
 
 /* ================= game state ================= */
-const EPISODES = [{ secs: 180 }, { secs: 240 }, { secs: 300 }];
+const EPISODES = [{ secs: 120 }, { secs: 150 }, { secs: 120, decimals: true }]; /* seconds per problem (fmtTime shows 2:00 / 2:30 / 2:00) */
 const G = { episode: 0, timeLeft: 180, timeScale: 1, level: 0, probIdx: 0, strength: 100, problems: [], stars: [], P: null, overlay: null, started: false };
 const fresh = new Set();
 let lockUntil = 0;
@@ -1549,8 +1571,10 @@ function newLevel(l, keepStrength) {
 function startProblem() {
   G.timeLeft = EPISODES[G.episode].secs; G.lastTickSec = null;
   const pr = G.problems[G.probIdx], A = analyze(pr.A, pr.B);
-  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "enter", seq: buildSeq(A), sel: true, k: 0, idx: 0, crow: 0,
-    prod: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "" };
+  const dA = +pr.dA || 0, dB = +pr.dB || 0, seq = buildSeq(A);
+  if (dA + dB > 0) seq.push({ t: "dec", k: A.m, val: dA + dB }); /* last step: place the decimal point (total decimal places of both factors, counted from the right) */
+  G.P = { A: String(pr.A), B: String(pr.B), dA, dB, dispA: withPoint(String(pr.A), dA), dispB: withPoint(String(pr.B), dB), an: A, n: A.n, m: A.m, L: A.L, phase: "enter", seq, sel: true, k: 0, idx: 0, crow: 0,
+    prod: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "", decSel: 1, decP: 0 };
   for (let k = 0; k < A.m; k++) { G.P.prod.push({}); G.P.carries.push({}); }
   streak = 0; G.overlay = null; render();
 }
@@ -1608,6 +1632,9 @@ function act(type, arg) {
   switch (type) {
     case "blank": return onBlank(arg);
     case "digit": return onDigit(arg);
+    case "dec": return onDec(arg);
+    case "decmove": return onDecMove(arg);
+    case "decput": return onDec(P.decSel);
   }
 }
 /* How answers are entered: answer boxes are shown and the cursor is already in the ones box of the current row, so the player just
@@ -1635,6 +1662,9 @@ function onBlank(i) {
 function onDigit(v) {
   const P = G.P; if (P.phase !== "enter") return;
   const e = P.seq[P.idx];
+  if (e && e.t === "dec") { // last step is the decimal point: number keys only nudge (no penalty)
+    say("Choose the gap for the decimal point: tap it, or use the arrow keys and press the period key.", "warnmsg"); SFX.nudge(); render(); return;
+  }
   if (!P.sel) { // boxes are already shown: just start typing
     P.sel = true; P.crow = (e.t === "sum" || e.t === "scarry") ? -1 : e.k;
   }
@@ -1654,6 +1684,20 @@ function onDigit(v) {
   P.k = nx.k;
   if (nx.k !== e.k) P.crow = (nx.t === "sum" || nx.t === "scarry") ? -1 : nx.k; // new row starts: previous row's carries are wiped
   render();
+}
+/* Decimal step (Episode 3): small gap markers sit between the product digits. Tap/click one, or use the arrow keys and press "." (or Enter).
+   Correct = the total number of decimal places of both factors, counted from the right; a wrong gap is a normal 10% mistake. */
+function onDec(p) {
+  const P = G.P; if (!P || P.phase !== "enter") return;
+  const e = P.seq[P.idx]; if (!e || e.t !== "dec") return;
+  p = Math.max(1, Math.min(P.L - 1, +p || 1)); P.decSel = p;
+  if (p !== e.val) { say("Not quite. Count the decimal places in both factors, then count that many digits in from the right.", "badmsg"); return penalty('.decgap[data-dec="' + p + '"]'); }
+  say(null); P.decP = p; fresh.add("glow:f" + p); P.idx++; good("tick"); P.sel = false; complete();
+}
+function onDecMove(dir) {
+  const P = G.P; if (!P || P.phase !== "enter") return;
+  const e = P.seq[P.idx]; if (!e || e.t !== "dec") return;
+  P.decSel = Math.max(1, Math.min(P.L - 1, P.decSel + (dir > 0 ? 1 : -1))); render();
 }
 function complete() {
   const P = G.P; P.phase = "complete";
@@ -1804,10 +1848,11 @@ function render() {
   const E0 = P.phase === "enter" ? P.seq[P.idx] : null;
   const blankHtml = (x, y, i, cls) => '<button type="button" class="cell blank slot tap' + (cls ? " " + cls : "") + (P.sel && i === P.idx ? " sel" : "") + '" style="left:' + x + "px;top:" + y + 'px" data-blank="' + i + '" aria-label="Empty answer blank"></button>';
   // top number and bottom number: just numbers, not clickable (the one being multiplied is highlighted)
-  an.Ad.forEach((d, i) => { const foc = E0 && (E0.t === "carry" || (E0.t === "prod" && !E0.zero && !E0.lead)) && E0.i === i; html += cell(X(i), yA, '<span class="dg">' + d + "</span>", "hand stone" + (foc ? " focus" : ""), ""); });
+  const dpt = (on) => on ? '<i class="dp"></i>' : "";
+  an.Ad.forEach((d, i) => { const foc = E0 && (E0.t === "carry" || (E0.t === "prod" && !E0.zero && !E0.lead)) && E0.i === i; html += cell(X(i), yA, '<span class="dg">' + d + "</span>" + dpt(P.dA > 0 && i === P.dA), "hand stone" + (foc ? " focus" : ""), ""); });
   an.Bd.forEach((d, j) => {
     const cur = E0 && (E0.t === "prod" || E0.t === "carry") && j === E0.k;
-    html += cell(X(j), yB, '<span class="dg">' + d + "</span>", "hand stone" + (cur ? " cur" : ""), "");
+    html += cell(X(j), yB, '<span class="dg">' + d + "</span>" + dpt(P.dB > 0 && j === P.dB), "hand stone" + (cur ? " cur" : ""), "");
   });
   html += '<div class="sign hand" style="left:' + (X(Math.max(n, m)) + 0.05 * cw) + "px;top:" + yB + 'px">×</div>';
   html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL1 - 1) + 'px"></div>';
@@ -1829,7 +1874,8 @@ function render() {
   // answer-row carries: a small digit in the narrow space under the multiplication line, over the column being added
   Object.keys(P.scar).forEach(c => { html += cell(X(+c), yS1, P.scar[c], "hand carryc sc" + glow("s" + c), ""); });
   html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL2 - 1) + 'px"></div>';
-  Object.keys(P.final).forEach(c => { html += cell(X(+c), yF, '<span class="dg">' + P.final[c] + "</span>", "hand quo" + glow("f" + c), ""); });
+  Object.keys(P.final).forEach(c => { html += cell(X(+c), yF, '<span class="dg">' + P.final[c] + "</span>" + dpt(P.decP > 0 && +c === P.decP), "hand quo" + glow("f" + c), ""); });
+  if (E0 && E0.t === "dec") for (let g = 1; g < P.L; g++) html += '<button type="button" class="decgap tap' + (P.decSel === g ? " sel" : "") + '" style="left:' + (XR - g * cw - cw / 2) + "px;top:" + yF + 'px" data-dec="' + g + '" aria-label="Put the decimal point here"><span class="gd"></span></button>';
   if (E0 && (E0.t === "sum" || E0.t === "scarry")) {
     P.seq.forEach((e, i) => { if (i >= P.idx && e.t === "sum") html += blankHtml(X(e.col), yF, i); });
     if (E0.t === "scarry") html += blankHtml(X(E0.col), yS1, P.idx, "cblank sc");
@@ -1837,11 +1883,11 @@ function render() {
     for (let k = 0; k < m; k++) if (P.prod[k][hc] !== undefined) html += cell(X(hc), yP(k), "", "colhi", ""); // highlight the column being added
   }
   const bw = Math.max(L.W, L.contentW), bh = Math.max(L.H - L.prH, yF + rh * 1.4);
-  board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--scH:" + scH + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
+  board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--scH:" + scH + "px;--dpd:" + Math.max(5, Math.round(rh * 0.11)) + "px;--dpd2:" + Math.max(14, Math.round(rh * 0.27)) + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
   board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + L.prH) + "px;top:-" + L.prH + "px;background-position:0 0,0 " + Math.round((L.prH + yP0 + 2) % rh) + 'px"></div>' + html;
   board.style.top = L.prH + "px"; board.style.position = "absolute";
   // keep the active spot visible
-  const workEl = $("#work"), act = board.querySelector(".blank.sel") || board.querySelector(".blank");
+  const workEl = $("#work"), act = board.querySelector(".blank.sel") || board.querySelector(".blank") || board.querySelector(".decgap.sel");
   if (act && workEl && workEl.scrollHeight > workEl.clientHeight) {
     const wr = workEl.getBoundingClientRect(), ar = act.getBoundingClientRect(), topKeep = wr.top + L.prH + 4;
     if (ar.top < topKeep) workEl.scrollTop = Math.max(0, workEl.scrollTop - (topKeep - ar.top)); // a carry box on top may have scrolled under the prompt
@@ -1851,15 +1897,16 @@ function render() {
 }
 function defaultPrompt() {
   const P = G.P;
-  if (P.phase === "complete") return "Solved! " + P.A + " × " + P.B + " = " + P.an.product;
+  if (P.phase === "complete") return "Solved! " + P.dispA + " × " + P.dispB + " = " + withPoint(P.an.product, P.decP);
   if (P.phase === "over") return "Out of strength.";
   const e = P.seq[P.idx]; if (!e) return "";
+  if (e.t === "dec") return "Last step! Count the decimal places in both factors, then place the decimal point.";
   if (e.t === "carry") return "A carry! Tap it in the little box on top.";
   if (e.t === "scarry") return "A carry! Tap it in the little box above the next column.";
   if (e.lead) return "Tap the last carry: the tens digit of that last multiplication.";
   if (e.zero) return e.col === 0 ? "New row! Start with a 0 placeholder in the ones place." : "This blank is a placeholder spot. Type the 0 that goes here.";
   if (e.t === "sum") return e.col === 0 ? "Now add the rows. Start at the ones place and type the numbers." : e.cin ? "Add this column and the carry, then type the ones digit." : "Add this column, then type the ones digit.";
-  if (P.idx === 0) return "Start at the ones place. Type the numbers; the cursor moves left by itself.";
+  if (P.idx === 0) return (P.dA + P.dB > 0 ? "Multiply like whole numbers first. " : "") + "Start at the ones place. Type the numbers; the cursor moves left by itself.";
   return e.cin ? "Multiply, add the carry, then type the ones digit." : "Multiply, then type the ones digit.";
 }
 
@@ -1883,12 +1930,12 @@ function renderInput() {
   const P = G.P, ph = P ? P.phase : "none";
   const playing = P && !G.overlay && ph !== "complete" && ph !== "over";
   /* number tiles stay tappable; they look dim only if the cursor is somehow not yet placed */
-  $$(".key").forEach(b => { b.disabled = !playing; b.classList.toggle("idle", !!playing && !P.sel); });
+  $$(".key").forEach(b => { b.disabled = !playing; b.classList.toggle("idle", !!playing && (!P.sel || (P.seq[P.idx] && P.seq[P.idx].t === "dec"))); });
 }
 
 function epSeg(sel, attr) {
   const cnt = DEV ? EPISODES.length : unlocked();
-  return '<div class="seg epseg">' + EPISODES.slice(0, cnt).map((E, i) => '<button data-' + attr + '="' + i + '" class="' + (sel === i ? "sel" : "") + '">Episode ' + (i + 1) + '<span class="soon">' + (E.secs / 60) + ":00 per problem</span></button>").join("") + "</div>";
+  return '<div class="seg epseg">' + EPISODES.slice(0, cnt).map((E, i) => '<button data-' + attr + '="' + i + '" class="' + (sel === i ? "sel" : "") + '">Episode ' + (i + 1) + '<span class="soon">' + fmtTime(E.secs) + " per problem</span></button>").join("") + "</div>";
 }
 function refillHtml(o) {
   const v = o.type === "episode" ? (o.to !== undefined ? o.to : 100) : (o.refilled ? o.to : o.from);
@@ -1908,7 +1955,7 @@ function renderOverlay() {
       '</div><button class="big" data-act="next">Start E' + ((o.ep || 0) + 1) + " · Level " + ((o.sel || 0) + 1) + "</button>";
   } else if (o.type === "solved") {
     const P = G.P;
-    h = "<h2>Problem solved!</h2>" + starsHtml(o.stars) + '<div class="eq hand">' + P.A + " × " + P.B + " = " + P.an.product + "</div><p>" +
+    h = "<h2>Problem solved!</h2>" + starsHtml(o.stars) + '<div class="eq hand">' + P.dispA + " × " + P.dispB + " = " + withPoint(P.an.product, P.decP) + "</div><p>" +
       (P.pens === 0 ? "Perfect — no mistakes!" : P.pens + (P.pens === 1 ? " slip" : " slips") + " this time.") + '</p><button class="big" data-act="next">' + (G.probIdx + 1 >= G.problems.length ? "Finish level" : "Next problem") + " ▶</button>";
   } else if (o.type === "level") {
     const tot = G.stars.reduce((a, b) => a + (b || 0), 0);
@@ -1916,9 +1963,9 @@ function renderOverlay() {
       '<button class="big" data-act="next">On to Level ' + (G.level + 2) + ": " + LVI(G.episode, G.level + 1).name + " ▶</button>";
   } else if (o.type === "episode") {
     // Episode star total matches the scoreboard: 4 levels × 3 stars = 12, from the saved record (already written in levelPassed).
-    const tot = [0, 1, 2, 3].reduce((a, lv) => a + lvStars(Progress.cur, G.episode + "-" + lv), 0), nx = EPISODES[G.episode + 1].secs / 60;
+    const tot = [0, 1, 2, 3].reduce((a, lv) => a + lvStars(Progress.cur, G.episode + "-" + lv), 0), nx = fmtTime(EPISODES[G.episode + 1].secs);
     h = '<div class="epbadge">🎉</div><h1>Episode ' + (G.episode + 1) + " complete!</h1><p>You escaped " + EP_INFO[G.episode].name.toLowerCase() + "! " + tot + " of 12 stars.</p>" + refillHtml(o) +
-      '<p class="epnext">Episode ' + (G.episode + 2) + ": " + EP_INFO[G.episode + 1].name + " — only <b>" + nx + ":00</b> per problem.</p>" + '<button class="big" data-act="next">On to Episode ' + (G.episode + 2) + ' ▶</button>';
+      '<p class="epnext">Episode ' + (G.episode + 2) + ": " + EP_INFO[G.episode + 1].name + " — <b>" + nx + "</b> per problem.</p>" + '<button class="big" data-act="next">On to Episode ' + (G.episode + 2) + ' ▶</button>';
   } else if (o.type === "timeup") {
     h = '<div class="epbadge">⏰</div><h2>Time\'s up!</h2><p>Try Level ' + (G.level + 1) + " again — " + lvCfg(G.episode, G.level).name + ". You have " + fmtTime(EPISODES[G.episode].secs) + " per problem. Your strength stays at " + Math.round(G.strength) + "%.</p>" + '<button class="big" data-act="next">Try Level ' + (G.level + 1) + " again ▶</button>";
   } else if (o.type === "all") {
@@ -1943,6 +1990,7 @@ document.addEventListener("click", e => {
   audio();
   if (t.closest("#cine, #devp")) return;
   if (t.dataset.blank !== undefined) return act("blank", +t.dataset.blank);
+  if (t.dataset.dec !== undefined) return act("dec", +t.dataset.dec);
   if (t.dataset.key) return act("digit", +t.dataset.key);
   if (t.id === "btn-settings") { if (G.overlay && G.overlay.type === "settings") return; G.overlay = { type: "settings", prev: G.overlay }; render(); return; }
   if (t.dataset.ep !== undefined) { G.overlay.ep = +t.dataset.ep; SFX.step(); render(); return; }
@@ -1968,6 +2016,10 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (e.key === "Escape" && G.overlay && G.overlay.type === "settings") { act("next"); return; }
+  if (!G.overlay && G.P && G.P.phase === "enter" && G.P.seq[G.P.idx] && G.P.seq[G.P.idx].t === "dec") { // decimal step: arrows move the marker, "." / Enter places it
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); act("decmove", e.key === "ArrowLeft" ? 1 : -1); return; }
+    if (e.key === "." || e.key === "," || e.key === "Enter") { e.preventDefault(); act("decput"); return; }
+  }
   if (/^[0-9]$/.test(e.key)) {
     if (G.overlay) return;
     press(document.querySelector('.key[data-key="' + e.key + '"]'));
@@ -2598,7 +2650,7 @@ const LV_INFO = [
   { name: "Geyser Run", mapLabel: "Geyser Run", brief: "Solve 4 problems to dodge the geysers!", winCap: "Geysers dodged!", setup: "setup-e1l1", setupSfx: "sfx/setup-e1l1.m4a", win: "win-e1l1", winSfx: "sfx/win-e1l1.m4a", lose: "lose-e1l1" },
   { name: "Breaking Bridge", mapLabel: "Breaking Bridge", brief: "Solve 4 problems to cross the breaking bridge!", winCap: "Made it across!", setup: "setup-e1l2", setupSfx: "sfx/setup-e1l2.m4a", win: "win-e1l2", winSfx: "sfx/win-e1l2.m4a", lose: "lose-e1l2" },
   { name: "Log Slide", mapLabel: "Log Slide", brief: "Solve 4 problems to dodge the tumbling logs!", winCap: "Dodged them all!", setup: "setup-e1l3", setupSfx: "sfx/setup-e1l3.m4a", win: "win-e1l3", winSfx: "sfx/win-e1l3.m4a", lose: "lose-e1l3" },
-  { name: "Volcano Rendezvous", mapLabel: "Volcano Rendezvous", brief: "Solve 2 problems to escape before the volcano erupts!", winCap: "Raft away!", setup: "setup-e1l4", setupSfx: "sfx/setup-e1l4.m4a", win: "win-e1l4", winSfx: "sfx/win-e1l4.m4a", lose: "lose-e1l4" }
+  { name: "Volcano Rendezvous", mapLabel: "Volcano Rendezvous", brief: "Solve 4 problems to escape before the volcano erupts!", winCap: "Raft away!", setup: "setup-e1l4", setupSfx: "sfx/setup-e1l4.m4a", win: "win-e1l4", winSfx: "sfx/win-e1l4.m4a", lose: "lose-e1l4" }
 ];
 const JUNGLE_PTS = EP_INFO[0].pts;
 const EP_LV = {
@@ -2606,13 +2658,13 @@ const EP_LV = {
     { name: "Flash Flood", mapLabel: "Flash Flood", brief: "Solve 4 problems to outrun the flash flood!", winCap: "High and dry!", setup: "setup-e2l1", setupSfx: "sfx/setup-e2l1.m4a", win: "win-e2l1", winSfx: "sfx/win-e2l1.m4a", lose: "lose-e2l1" },
     { name: "Dust Wall", mapLabel: "Dust Wall", brief: "Solve 4 problems to outlast the sandstorm!", winCap: "Storm survived!", setup: "setup-e2l2", setupSfx: "sfx/setup-e2l2.m4a", win: "win-e2l2", winSfx: "sfx/win-e2l2.m4a", lose: "lose-e2l2" },
     { name: "Broken Ledge", mapLabel: "Broken Ledge", brief: "Solve 4 problems to leap the crumbling ledge!", winCap: "Up and over!", setup: "setup-e2l3", setupSfx: "sfx/setup-e2l3.m4a", win: "win-e2l3", winSfx: "sfx/win-e2l3.m4a", lose: "lose-e2l3" },
-    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the jeep through the boulders!", winCap: "Rescued in the nick of time!", setup: "setup-e2l4", setupSfx: "sfx/setup-e2l4.m4a", win: "win-e2l4", winSfx: "sfx/win-e2l4.m4a", lose: "lose-e2l4" }
+    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 4 problems to reach the jeep through the boulders!", winCap: "Rescued in the nick of time!", setup: "setup-e2l4", setupSfx: "sfx/setup-e2l4.m4a", win: "win-e2l4", winSfx: "sfx/win-e2l4.m4a", lose: "lose-e2l4" }
   ],
   2: [
     { name: "Crumbling Stairs", mapLabel: "Crumbling Stairs", brief: "Solve 4 problems to climb the crumbling stairs!", winCap: "Top of the stairs!", setup: "setup-e3l1", setupSfx: "sfx/setup-e3l1.m4a", win: "win-e3l1", winSfx: "sfx/win-e3l1.m4a", lose: "lose-e3l1" },
     { name: "Stone Wheel", mapLabel: "Stone Wheel", brief: "Solve 4 problems to outrun the rolling stone wheel!", winCap: "Not today, stone wheel!", setup: "setup-e3l2", setupSfx: "sfx/setup-e3l2.m4a", win: "win-e3l2", winSfx: "sfx/win-e3l2.m4a", lose: "lose-e3l2" },
     { name: "Flooded Passage", mapLabel: "Flooded Passage", brief: "Solve 4 problems to cross the flooding passage!", winCap: "Through the flood!", setup: "setup-e3l3", setupSfx: "sfx/setup-e3l3.m4a", win: "win-e3l3", winSfx: "sfx/win-e3l3.m4a", lose: "lose-e3l3" },
-    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 2 problems to reach the rescue helicopter!", winCap: "You've done it — way to go!", setup: "setup-e3l4", setupSfx: "sfx/setup-e3l4.m4a", win: "win-e3l4", winSfx: "sfx/win-e3l4.m4a", lose: "lose-e3l4" }
+    { name: "Rendezvous Point", mapLabel: "Rendezvous Point", brief: "Solve 4 problems to reach the rescue helicopter!", winCap: "You've done it — way to go!", setup: "setup-e3l4", setupSfx: "sfx/setup-e3l4.m4a", win: "win-e3l4", winSfx: "sfx/win-e3l4.m4a", lose: "lose-e3l4" }
   ]
 };
 const LVS = ep => EP_LV[ep] || LV_INFO;
@@ -2693,7 +2745,7 @@ const Cine = (() => {
     return new Promise(res => {
       const un = unlocked();
       const btns = un < 2 ? '<button class="tstart cprimary" data-cine="ep" data-epi="0">▶&nbsp; Start the expedition</button>'
-        : '<div class="tpick">Choose your episode</div>' + EP_INFO.slice(0, un).map((E, i) => '<button class="tep" data-cine="ep" data-epi="' + i + '"><b>Episode ' + (i + 1) + ": " + E.name + "</b><span>" + (EPISODES[i].secs / 60) + ":00 per problem" + (E.soon ? " · " + E.soon : "") + "</span></button>").join("");
+        : '<div class="tpick">Choose your episode</div>' + EP_INFO.slice(0, un).map((E, i) => '<button class="tep" data-cine="ep" data-epi="' + i + '"><b>Episode ' + (i + 1) + ": " + E.name + "</b><span>" + fmtTime(EPISODES[i].secs) + " per problem" + (E.soon ? " · " + E.soon : "") + "</span></button>").join("");
       const guestCloud = !!(Progress.cur && Progress.mode === "guest" && fbOn());
       const who = !Progress.cur ? "" : guestCloud
         ? '<div class="tplayer tguest">Playing as a guest — scores stay on this device until you sign in.</div>'
@@ -3885,7 +3937,7 @@ function resumeScreen(r) {
 }
 function teacherJumpPanel(selEp, selLv) {
   const ep = selEp | 0, lv = selLv | 0;
-  const epBtns = EPISODES.map((E, i) => '<button type="button" data-pg="t-jumpep" data-ep="' + i + '" class="' + (ep === i ? "sel" : "") + '">Episode ' + (i + 1) + '<span class="soon">' + (E.secs / 60) + ":00 per problem</span></button>").join("");
+  const epBtns = EPISODES.map((E, i) => '<button type="button" data-pg="t-jumpep" data-ep="' + i + '" class="' + (ep === i ? "sel" : "") + '">Episode ' + (i + 1) + '<span class="soon">' + fmtTime(E.secs) + " per problem</span></button>").join("");
   const lvBtns = LEVELS.map((L, i) => '<button type="button" data-pg="t-jumplv" data-lv="' + i + '" class="' + (lv === i ? "sel" : "") + '">Level ' + (i + 1) + "</button>").join("");
   return '<div class="tchjump"><div class="tchjump-lbl">Jump to any episode &amp; level</div>' +
     '<p class="tchjump-hint">Starts that level at 100% strength. Does not mark levels passed or change the scoreboard.</p>' +
@@ -4026,6 +4078,7 @@ window.__MVM_AUTH = { checkUsername, checkNick, checkAccountName, prettyAccountN
 function nextMove(P) {
   if (P.phase !== "enter") return null;
   const e = P.seq[P.idx]; if (!e) return null;
+  if (e.t === "dec") return ["dec", e.val];
   return ["digit", e.val];
 }
 async function devSolve() {
@@ -4036,7 +4089,7 @@ async function devSolve() {
     const mv = nextMove(P); if (!mv) break;
     lockUntil = 0; act(mv[0], mv[1]); await w(ANIM ? 25 : 4);
   }
-  return "solved " + P.A + "x" + P.B;
+  return "solved " + P.dispA + "x" + P.dispB;
 }
 if (DEV) {
   const mapQ = new URLSearchParams(location.search).get("map");
@@ -4101,7 +4154,7 @@ try { const sp = parseFloat(new URLSearchParams(location.search).get("timerSpeed
 window.showStrengthBoost = showStrengthBoost;
 window.__MVM = { G, Cine, Music, RecAudio, get AC() { return AC; }, beginLevel, winLevel, loseFlow, timeUp, runTitle, devSolve, store, TUNE, LV_INFO, EP_INFO, LVS, Progress, normName, rosterCsv, openBoard, get DB() { return DB; }, timerRunning, unlocked, setAnim: v => { ANIM = v; }, cancelFlows: () => ++flowTok, teacherScreen, teacherCloudScreen, teacherJumpPanel };
 window.__DD = { Cine, go(ep, lv) { flowTok++; Cine.hide(); G.overlay = null; G.started = true; G.episode = ep; newLevel(lv || 0, false); }, G, EPISODES, penalty: () => penalty(), render: () => render(), setTimeScale: v => { G.timeScale = v; }, act, analyze, genLevel, newLevel, LEVELS, LEVELS_EP, nextMove, setAnim: v => { ANIM = v; }, setLock: () => { lockUntil = 0; },
-  loadProblem(A, B) { G.overlay = null; G.problems[G.probIdx] = { A: String(A), B: String(B) }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, sel: P.sel, k: P.k, idx: P.idx, total: P.seq.length, next: P.seq[P.idx] ? Object.assign({}, P.seq[P.idx]) : null, carries: P.carries, scar: P.scar, strength: G.strength, pens: P.pens, msg: P.msg, A: P.A, B: P.B, product: P.an.product, final: P.final, prod: P.prod }; } };
+  loadProblem(A, B, dA, dB) { G.overlay = null; G.problems[G.probIdx] = { A: String(A), B: String(B), dA: dA || 0, dB: dB || 0 }; startProblem(); }, state: () => { const P = G.P; return P && { episode: G.episode, level: G.level, timeLeft: G.timeLeft, overlay: G.overlay && G.overlay.type, phase: P.phase, sel: P.sel, k: P.k, idx: P.idx, total: P.seq.length, next: P.seq[P.idx] ? Object.assign({}, P.seq[P.idx]) : null, carries: P.carries, scar: P.scar, strength: G.strength, pens: P.pens, msg: P.msg, A: P.A, B: P.B, dA: P.dA, dB: P.dB, decSel: P.decSel, decP: P.decP, dispA: P.dispA, dispB: P.dispB, L: P.L, product: P.an.product, final: P.final, prod: P.prod }; } };
 })();
 </script>
 <script>
