@@ -1080,7 +1080,7 @@ body.ep-snow #board .cell.sidefac { color:#071c2e; font-weight:900; }
 [data-theme="journal"] body.ep-savanna .key { position:relative; }
 
 
-/* ===== Multiplication Madness: click a blank, then a number tile. No step/operator buttons, only the number pad. ===== */
+/* ===== Multiplication Madness: answer boxes are shown with the cursor already in place; just type (number pad or keyboard). No step/operator buttons. ===== */
 .steps, .ctx { display:none !important; }
 #inner { grid-template-columns:1fr !important; grid-template-areas:"pad" !important; max-width:520px !important; }
 @media (orientation: landscape) and (max-height: 520px) { #inner { max-width:none !important; } }
@@ -1092,6 +1092,10 @@ body.ep-snow #board .cell.sidefac { color:#071c2e; font-weight:900; }
 .key.idle:not(:disabled) { opacity:.62; }
 .cell.blank.cblank { height:calc(var(--rh) * .54); }
 .cell.blank.cblank::after { left:18%; right:18%; top:8%; bottom:8%; }
+/* Addition carries: a small handwritten digit tucked under the multiplication line, over the column — not a reserved blank row. */
+.cell.carryc.sc, .cell.blank.cblank.sc { height:var(--scH, max(18px, calc(var(--rh) * .42))); font-size:max(13px, calc(var(--rh) * .38)); z-index:4; padding:0; align-items:center; }
+.cell.blank.cblank.sc::after { left:12%; right:12%; top:4%; bottom:4%; border-width:2px; border-radius:6px; }
+.cell.blank.cblank.sc::before { content:''; position:absolute; left:50%; top:50%; width:max(100%, 32px); height:max(100%, 32px); transform:translate(-50%, -60%); } /* iPhone target, biased up so it stays off the digit below */
 </style>
 <style id="accounts-css">
 /* ================= accounts: sign in, create account, guest, public scoreboard ================= */
@@ -1545,7 +1549,7 @@ function newLevel(l, keepStrength) {
 function startProblem() {
   G.timeLeft = EPISODES[G.episode].secs; G.lastTickSec = null;
   const pr = G.problems[G.probIdx], A = analyze(pr.A, pr.B);
-  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "enter", seq: buildSeq(A), sel: false, k: 0, idx: 0, crow: 0,
+  G.P = { A: String(pr.A), B: String(pr.B), an: A, n: A.n, m: A.m, L: A.L, phase: "enter", seq: buildSeq(A), sel: true, k: 0, idx: 0, crow: 0,
     prod: [], carries: [], scar: {}, final: {}, pens: 0, msg: null, msgCls: "" };
   for (let k = 0; k < A.m; k++) { G.P.prod.push({}); G.P.carries.push({}); }
   streak = 0; G.overlay = null; render();
@@ -1606,32 +1610,33 @@ function act(type, arg) {
     case "digit": return onDigit(arg);
   }
 }
-/* How answers are entered: click the first (rightmost) blank of a row ONCE, then tap number tiles: the cursor moves left by itself
-   through that row (partial-product rows, their placeholder zeros, and the answer row all work the same way). Carries are never
-   filled in for the player: when one is due, an EMPTY little carry box appears by itself on top (above the next top digit for the
-   multiplication carries; above the column being added for the answer-row carries), the cursor jumps into it, the player taps the
-   number, and the cursor goes back to the next digit by itself. A row's leading digit works the same way (its blank appears and the
-   cursor moves into it). No click is needed for any of that. Factor digits are not clickable. A wrong blank (out of order) costs 10% like
-   any wrong answer; a tile tapped before the cursor is placed is only a friendly reminder (no penalty). */
+/* How answers are entered: answer boxes are shown and the cursor is already in the ones box of the current row, so the player just
+   types (number pad or keyboard). The cursor moves left by itself through that row (partial-product rows, their placeholder zeros —
+   which the player must type, never auto-filled — and the answer row all work the same way). When a row finishes, the cursor jumps
+   into the next row's ones box by itself; no click is needed to start a line. Carries are never filled in for the player: when one
+   is due, an EMPTY little carry box appears by itself on top (above the next top digit for the multiplication carries; above the
+   column being added for the answer-row carries), the cursor jumps into it, the player types the number, and the cursor goes back
+   to the next digit by itself. A row's leading digit works the same way (its blank appears and the cursor moves into it). Factor
+   digits are not clickable. Clicking a box is optional and harmless if it is already the active one; a wrong blank (out of order)
+   costs 10% like any wrong answer. */
 const BLANK_SEL = i => '.cell.blank[data-blank="' + i + '"]';
 const isCarryEntry = e => !!e && (e.t === "carry" || e.t === "scarry" || (e.t === "prod" && e.lead));
 function sayWrongOrder(e) {
-  say(e && e.t === "sum" ? "Not that blank. Add from the right: start with the rightmost empty blank." : "Not that blank. Work from the right: click the rightmost empty blank first.", "badmsg");
+  say(e && e.t === "sum" ? "Not that blank. Add from the right: type in the highlighted box." : "Not that blank. Work from the right: type in the highlighted box.", "badmsg");
 }
 function onBlank(i) {
   const P = G.P; if (P.phase !== "enter") return;
   const e = P.seq[P.idx];
   if (i < P.idx) return; // already filled
   if (i !== P.idx) { sayWrongOrder(e); return penalty(BLANK_SEL(i)); }
-  if (P.sel) return; // the cursor is already here
-  P.sel = true; P.crow = e.t === "sum" ? -1 : e.k; say(null); good("place"); render(); // a new row starts: the previous row's carries are wiped
+  if (P.sel) return; // the cursor is already here (optional click; no-op)
+  P.sel = true; P.crow = (e.t === "sum" || e.t === "scarry") ? -1 : e.k; say(null); good("place"); render();
 }
 function onDigit(v) {
   const P = G.P; if (P.phase !== "enter") return;
   const e = P.seq[P.idx];
-  if (!P.sel) {
-    say("First click the blank where the digit goes, then tap a number.", "warnmsg"); SFX.nudge(); render();
-    document.querySelectorAll(".cell.blank").forEach(x => { x.classList.remove("blkhint"); void x.offsetWidth; x.classList.add("blkhint"); }); return;
+  if (!P.sel) { // boxes are already shown: just start typing
+    P.sel = true; P.crow = (e.t === "sum" || e.t === "scarry") ? -1 : e.k;
   }
   if (v !== e.val) {
     say(e.t === "carry" ? "Not quite. The carry is the tens digit of the number you just made (the digit to the left of the one you wrote)." : e.t === "scarry" ? "Not quite. The carry is the tens digit of the column's total." : e.lead ? "Not quite. Write the last carry: the tens digit of that last multiplication." : e.zero ? "Not quite. A placeholder spot holds a zero." : e.t === "sum" ? "Not quite. " + (e.cin ? "Add the column, then the carry." : "Add up the column.") : "Not quite. " + (e.cin ? "Multiply, then add the carry." : "Check your times table."), "badmsg");
@@ -1644,9 +1649,10 @@ function onDigit(v) {
   else { P.final[e.col] = v; fresh.add("glow:f" + e.col); }
   P.idx++; good("tick");
   const nx = P.seq[P.idx];
-  P.sel = !!nx && nx.k === e.k; // the cursor follows by itself within the row (digits, carry boxes, the leading digit); a new row needs one click
-  if (!nx) return complete();
+  if (!nx) { P.sel = false; return complete(); }
+  P.sel = true; // cursor always moves into the next box; no click needed to start a row
   P.k = nx.k;
+  if (nx.k !== e.k) P.crow = (nx.t === "sum" || nx.t === "scarry") ? -1 : nx.k; // new row starts: previous row's carries are wiped
   render();
 }
 function complete() {
@@ -1749,7 +1755,8 @@ function toast(msg) {
 
 /* ================= rendering ================= */
 function isPhoneLand() { return !!(window.matchMedia && matchMedia("(orientation: landscape) and (max-height: 520px)").matches); }
-const SZ = 0.56; /* height of a carry strip, in rows: the strip right under the prompt (above the top number) and the strip above the first partial product */
+const SZ = 0.56; /* height of the top carry strip, in rows: the strip right under the prompt (above the top number) */
+const SC = 0.42; /* addition-carry box height, in rows: a small digit (~55–60% of a factor digit) tucked under the multiplication line */
 function layout() {
   const P = G.P, work = $("#work");
   const prH = (document.getElementById("prompt") || {}).offsetHeight || 28;
@@ -1758,7 +1765,7 @@ function layout() {
   const W = work.clientWidth - (phoneLand ? 8 : tight ? 10 : 18), H = Math.max(80, work.clientHeight - prH);
   const C = P.n + P.m, m = P.m;
   const totalCols = C + 1.5;
-  const rowsFull = 0.1 + SZ + 2 + 0.05 + SZ + m + 0.05 + 1 + 0.4;
+  const rowsFull = 0.1 + SZ + 2 + 0.05 + SC + m + 0.05 + 1 + 0.4;
   const rowH = phoneLand ? 1.08 : 1.16;
   const slack = phoneLand ? 0.15 : (tight ? 0.2 : 0.35);
   let cw = Math.floor(Math.min(W / totalCols, H / ((rowsFull + slack) * rowH)));
@@ -1783,7 +1790,13 @@ function render() {
   { const pr0 = $("#prompt"); if (pr0) { pr0.className = P.msgCls || ""; pr0.textContent = P.msg || defaultPrompt(); } }
   const L = layout(), { cw, rh, XR, TOP, C } = L, n = P.n, m = P.m, an = P.an;
   const X = c => XR - (c + 1) * cw; /* left edge of column c (0 = ones) */
-  const yC = TOP, yA = yC + SZ * rh, yB = yA + rh, yL1 = yB + rh + 2, yS1 = yL1 + 3, yP0 = yS1 + SZ * rh; // yC: carry boxes on top, above the top number; yS1: strip above the first partial product (answer-row carries)
+  const yC = TOP, yA = yC + SZ * rh, yB = yA + rh, yL1 = yB + rh + 2;
+  // Addition carries tuck into the narrow band under the multiplication line (no reserved blank row).
+  // The first partial product sits directly under that line; a sliver of the first row's unused headroom is reused so the small carry fits above the digits.
+  // Phone-landscape digits are larger (less headroom), so tuck less there. Box height matches .cell.carryc.sc (min 18px).
+  const scH = Math.max(18, Math.round(rh * SC));
+  const yS1 = yL1 + 2;
+  const yP0 = yS1 + scH + 2 - Math.round(rh * (isPhoneLand() ? 0.04 : 0.20));
   const yP = k => yP0 + k * rh, yL2 = yP(m - 1) + rh + 2, yF = yL2 + 3;
   const glow = id => fresh.has("glow:" + id) ? " glow" : "";
   let html = "";
@@ -1805,7 +1818,7 @@ function render() {
   for (let k = 0; k < m; k++) {
     Object.keys(P.prod[k]).forEach(c => { c = +c; const z = c < k; html += cell(X(c), yP(k), '<span class="dg">' + P.prod[k][c] + "</span>", "hand prod" + (z ? " zero" : "") + glow("p" + k + "," + c), ""); });
   }
-  // empty blanks of the row being worked on (placeholder zeros included): click the first one ONCE, then tap number tiles.
+  // empty blanks of the row being worked on (placeholder zeros included) are shown with the cursor already in the current box; just type.
   // The carry box (on top) and a row's leading digit appear empty, by themselves, when it is their turn, and the cursor is already in them.
   if (E0 && (E0.t === "prod" || E0.t === "carry")) {
     P.seq.forEach((e, i) => { if (i >= P.idx && e.t === "prod" && !e.lead && e.k === E0.k) html += blankHtml(X(e.col), yP(e.k), i); });
@@ -1813,18 +1826,18 @@ function render() {
     if (E0.t === "carry") html += blankHtml(X(E0.i), yC, P.idx, "cblank");
   }
   if (m > 0) html += '<div class="sign hand" style="left:' + (X(C - 0) + 0.05 * cw) + "px;top:" + yP(m - 1) + 'px">+</div>';
-  // answer-row carries (written by the player) go above the column being added, above the first partial product
-  Object.keys(P.scar).forEach(c => { html += cell(X(+c), yS1, P.scar[c], "hand carryc" + glow("s" + c), ""); });
+  // answer-row carries: a small digit in the narrow space under the multiplication line, over the column being added
+  Object.keys(P.scar).forEach(c => { html += cell(X(+c), yS1, P.scar[c], "hand carryc sc" + glow("s" + c), ""); });
   html += '<div class="rule-line" style="left:' + (X(C) + 0.15 * cw) + "px;width:" + (XR - X(C) - 0.15 * cw + 0.1 * cw) + "px;top:" + (yL2 - 1) + 'px"></div>';
   Object.keys(P.final).forEach(c => { html += cell(X(+c), yF, '<span class="dg">' + P.final[c] + "</span>", "hand quo" + glow("f" + c), ""); });
   if (E0 && (E0.t === "sum" || E0.t === "scarry")) {
     P.seq.forEach((e, i) => { if (i >= P.idx && e.t === "sum") html += blankHtml(X(e.col), yF, i); });
-    if (E0.t === "scarry") html += blankHtml(X(E0.col), yS1, P.idx, "cblank");
+    if (E0.t === "scarry") html += blankHtml(X(E0.col), yS1, P.idx, "cblank sc");
     const hc = E0.t === "scarry" ? E0.col - 1 : E0.col;
     for (let k = 0; k < m; k++) if (P.prod[k][hc] !== undefined) html += cell(X(hc), yP(k), "", "colhi", ""); // highlight the column being added
   }
   const bw = Math.max(L.W, L.contentW), bh = Math.max(L.H - L.prH, yF + rh * 1.4);
-  board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
+  board.style.cssText = "--cw:" + cw + "px;--rh:" + rh + "px;--scH:" + scH + "px;--mx:" + L.mx + "px;width:" + bw + "px;height:" + bh + "px";
   board.innerHTML = '<div class="paperbg" style="width:' + bw + "px;height:" + (bh + L.prH) + "px;top:-" + L.prH + "px;background-position:0 0,0 " + Math.round((L.prH + yP0 + 2) % rh) + 'px"></div>' + html;
   board.style.top = L.prH + "px"; board.style.position = "absolute";
   // keep the active spot visible
@@ -1841,17 +1854,13 @@ function defaultPrompt() {
   if (P.phase === "complete") return "Solved! " + P.A + " × " + P.B + " = " + P.an.product;
   if (P.phase === "over") return "Out of strength.";
   const e = P.seq[P.idx]; if (!e) return "";
-  if (!P.sel) {
-    if (e.t === "sum") return "Now add the rows. Click the blank on the far right of the answer line, then keep tapping numbers.";
-    if (P.idx === 0) return "Click the blank on the far right under the line, then tap the numbers. It moves left by itself.";
-    return "Next row: you're multiplying by the " + placeName(e.k) + " digit. Click the blank on the far right, then tap the numbers.";
-  }
   if (e.t === "carry") return "A carry! Tap it in the little box on top.";
   if (e.t === "scarry") return "A carry! Tap it in the little box above the next column.";
   if (e.lead) return "Tap the last carry: the tens digit of that last multiplication.";
-  if (e.t === "sum") return e.cin ? "Add this column and the carry, then tap the ones digit." : "Add this column, then tap the ones digit.";
-  if (e.zero) return "This blank is a placeholder spot. Tap the number that goes here.";
-  return e.cin ? "Multiply, add the carry, then tap the ones digit." : "Multiply, then tap the ones digit.";
+  if (e.zero) return e.col === 0 ? "New row! Start with a 0 placeholder in the ones place." : "This blank is a placeholder spot. Type the 0 that goes here.";
+  if (e.t === "sum") return e.col === 0 ? "Now add the rows. Start at the ones place and type the numbers." : e.cin ? "Add this column and the carry, then type the ones digit." : "Add this column, then type the ones digit.";
+  if (P.idx === 0) return "Start at the ones place. Type the numbers; the cursor moves left by itself.";
+  return e.cin ? "Multiply, add the carry, then type the ones digit." : "Multiply, then type the ones digit.";
 }
 
 function renderHeader() {
@@ -1873,7 +1882,7 @@ function renderHeader() {
 function renderInput() {
   const P = G.P, ph = P ? P.phase : "none";
   const playing = P && !G.overlay && ph !== "complete" && ph !== "over";
-  /* number tiles stay tappable (a tile before a blank gives a friendly nudge); they look dim until a blank is chosen */
+  /* number tiles stay tappable; they look dim only if the cursor is somehow not yet placed */
   $$(".key").forEach(b => { b.disabled = !playing; b.classList.toggle("idle", !!playing && !P.sel); });
 }
 
@@ -1894,7 +1903,7 @@ function renderOverlay() {
   root.dataset.sig = JSON.stringify(o);
   let h = "";
   if (o.type === "start") {
-    h = '<h1>Multiplication Madness</h1><p>Click a blank · Tap a number</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
+    h = '<h1>Multiplication Madness</h1><p>Just type the numbers</p>' + epSeg(o.ep || 0, "ep") + '<div class="lvgrid">' +
       LEVELS_EP[o.ep || 0].map((L, i) => '<button class="lv' + ((o.sel || 0) === i ? " sel" : "") + '" data-lv="' + i + '"><b>' + (i + 1) + ". " + L.name + "</b><span>" + L.desc + "</span></button>").join("") +
       '</div><button class="big" data-act="next">Start E' + ((o.ep || 0) + 1) + " · Level " + ((o.sel || 0) + 1) + "</button>";
   } else if (o.type === "solved") {
@@ -4016,9 +4025,8 @@ window.__MVM_AUTH = { checkUsername, checkNick, checkAccountName, prettyAccountN
 /* ================= dev tools (?dev=1) ================= */
 function nextMove(P) {
   if (P.phase !== "enter") return null;
-  const e = P.seq[P.idx];
-  if (P.sel) return ["digit", e.val];
-  return ["blank", P.idx];
+  const e = P.seq[P.idx]; if (!e) return null;
+  return ["digit", e.val];
 }
 async function devSolve() {
   if (!G.P || G.overlay) return "not playing";
